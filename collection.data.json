@@ -1,0 +1,17 @@
+{
+    "meta": {
+        "author": "",
+        "email": "",
+        "description": "Assignment 1",
+        "id": "andrewid-assignment1",
+        "languages": ["python"],
+        "difficulty": "medium",
+        "mode": "practice",
+        "exercises": [{
+            "path": "exercises/sort_the_shapes"
+        },{
+            "path":"exercises/placeholder"
+        }]
+    }
+
+}

@@ -1,0 +1,17 @@
+{
+    "meta": {
+        "author": "Group2",
+        "email": "placeholder@andrew.cmu.edu",
+        "title": "Sort the Shapes",
+        "description": "Sort the Shapes",
+        "id": "andrewid-sts",
+        "language": "",
+        "difficulty": "medium",
+        "mainFile": "main.js",
+        "instrFile": "instr.html",
+        "constructorName": "main",
+        "menuDisplayName": "Sort the Shapes",
+        "requires": {
+        }
+    }
+}

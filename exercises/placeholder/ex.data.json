@@ -1,0 +1,18 @@
+{
+    "meta": {
+        "author": "",
+        "email": "",
+
+       "title": "Placeholder",
+        "description": "Exists to make checking state easier.",
+        "id": "ks-ph",
+        "language": "javascript",
+        "difficulty": "medium",
+        "mainFile": "main.js",
+        "instrFile": "instr.html",
+        "constructorName": "main",
+        "menuDisplayName": "Placeholder",
+        "requires": {
+        }
+    }
+}

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>15-539</title>
+    <style>
+    body {
+      margin: 10px;
+    }
+
+    </style>
+
+</head>
+
+<body>
+
+  <h1>API Assignment I  - Sort the Shapes</h1>
+  <h3>Due Tuesday September 8th</h3>
+  <hr>
+  
+<iframe width="420" height="315" src="https://www.youtube.com/embed/880TM7nErV0" frameborder="0" allowfullscreen></iframe>
+  <br><br>
+  
+    <ul>
+        <li>
+          Title:
+          <ul>
+            <li>
+              Should be "Sort the Shapes"
+            </li>
+          </ul>
+        </li>
+        <li>
+          Instructions:
+          <ul>
+            <li>
+              Should say “Drag all shapes with corners to the left.”
+            </li>
+          </ul>
+        </li>
+        <li>
+          Undo, Redo, Reset, Display Correct Answer Buttons:
+          <ul>
+            <li>
+              Should be disabled all the time (including after submit)
+            </li>
+            <li>
+              Note: "New" button should not be disabled
+            </li>
+          </ul>
+        </li>
+        <li>
+          Shapes:
+          <ul>
+            <li>
+              Rectangles and ellipses loaded from ex.data.json (you can choose how they are specified)
+            </li>
+            <li>
+              Randomly scattered on the canvas, but always greater than 30px away from the edge
+            </li>
+          </ul>
+        </li>
+        <li>
+          Timer:
+          <ul>
+            <li>
+              Drawn in the top right 20px away from the top and right
+            </li>
+            <li>
+              Not a paragraph or header element, must be canvas text
+            </li>
+            <li>
+              Starts at 15 seconds
+            </li>
+            <li>
+              at 5 seconds an alert should pop up saying “5 seconds left!
+            </li>
+            <li>
+              at  0 seconds the exercise should autosubmit.
+            </li>
+          </ul>
+        </li>
+        <li>
+          Submit:
+          <ul>
+            <li>
+              Checks to make sure all shapes with corners are to the left of the line, and shapes without corners are to the right of the line
+            </li>
+            <li>
+              Brings up the feedback modal display either “Correct!” or “Incorrect!
+            </li>
+            <li>
+              Freeze the timer.
+            </li>
+            <li>
+              Make the shapes not draggable
+            </li>
+          </ul>
+        </li>
+        <li>
+          State:
+          <ul>
+            <li>
+              locations of shapes should be saved
+            </li>
+            <li>
+              timer
+            </li>
+            <li>
+              whether the exercise was submitted
+            </li>
+          </ul>
+        </li>
+        <li>
+          Modes:
+          <ul>
+            <li>
+              practice and quiz-immediate should do what is specified above
+            </li>
+            <li>
+              quiz-delay should do everything the same except: don't show feedback
+            </li>
+          </ul>
+        </li>
+        <li>
+          User interface should roughly match the video. No positioning may be hard-coded.
+        </li>
+      </ul>
+
+</body>
+
+</html>
