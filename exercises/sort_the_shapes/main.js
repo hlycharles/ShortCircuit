@@ -33,6 +33,67 @@ var main = function(ex) {
   /* UI variables */
   //small margin
   var s_margin = 10;
+ 
+  function draw_truth_tables(type){
+    if(type=="or"){
+      var x=(ex.width()/2) - 200;
+      var y=(ex.height()/2) - 150;
+    }
+    else{
+      var x=(ex.width()/2)+50;
+      var y=(ex.height()/2)-150;
+    }
+    ex.graphics.ctx.strokeRect(x, y, 150, 250);
+    var margin= 50;
+    var a_options=["A", "T", "T", "F", "F"];
+    var b_options=["B", "T", "F", "T", "F"];
+    var or_result=["A or B", "T", "T", "T", "F"];
+    var and_result=["A and B", "T", "F", "F", "F"];
+    //draw vertical lines
+    for(var i=0; i<2; i++){
+      ex.graphics.ctx.moveTo(x+margin,y);
+      ex.graphics.ctx.lineTo(x+margin,y+250);
+      ex.graphics.ctx.stroke();
+      margin+=50;
+    }
+    //draw horizontal lines
+    margin=50;
+    var curCol=a_options;
+    for(i=0; i<5; i++){
+      var text_margin=50;
+      var align=3;
+      var text_size="large";
+      ex.graphics.ctx.moveTo(x,y+margin);
+      ex.graphics.ctx.lineTo(x+150,y+margin);
+      ex.graphics.ctx.stroke();
+      //draw text
+      for(var j=0; j<3; j++){
+        if(j==0){curCol=a_options;}
+        else if(j==1){curCol=b_options;}
+        else {
+
+          if(type=="or"){
+            curCol=or_result;
+            if(i==0){
+              text_size="medium";
+              align=17;
+            }
+          }
+          else{
+            curCol=and_result;
+            if(i==0){
+              text_size="small";
+              align=17;
+            }
+          }
+        }
+        var text = ex.createParagraph(x+text_margin/2-align,y+margin-35,curCol[i],
+                                {size: text_size});
+        text_margin+=100;
+      }
+      margin+=50;
+    }
+  }
 
   //Generate a random expression that throws an exception
   function generate_exn() {
@@ -219,9 +280,15 @@ var main = function(ex) {
 
   //@Should be changed so that the initial question is about truth table
   function initialize() {
-    generate_code("(T or F) or E)");
-    draw_code(cur_code, 0);
-    draw_question("nextEval");
+    draw_truth_tables("or");
+    draw_truth_tables("and");
+    next = ex.createButton(ex.width()-50,ex.height()-50,"next",
+            {size:"small",color:"blue"}).on("click", function(){
+                ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
+                generate_code("(T or F) or E)");
+                draw_code(cur_code, 0);
+                draw_question("nextEval");
+            });
   }
 
   initialize();
