@@ -225,8 +225,7 @@ var main = function(ex) {
   function get_peak_str(format) {
     var indices = find_peak(format);
     var peak_format = format.substring(indices[0], indices[1] + 1);
-    var suffix = format.substring(indices[1] + 1, format.length);
-    var val_sub = format_code([peak_format, suffix]);
+    var val_sub = format_code([peak_format]);
     return val_sub[0];
   }
 
@@ -247,7 +246,7 @@ var main = function(ex) {
           next_stage_wrapper(ins, 0);
           break;
         case 2:
-          var ins = "Does short-circuit evaluation occur in ";
+          var ins = "Is there short-circuit evaluation in ";
           ins = ins.concat(get_peak_str(cur_code).concat("?"));
           next_stage_wrapper(ins, 0);
           break;
@@ -262,7 +261,9 @@ var main = function(ex) {
           next_stage_wrapper(ins, 0);
           break;
         case 5:
-          next_stage_wrapper("Does short-circuit evaluation occur?", 0);
+          var ins = "Is there short-circuit evaluation in ";
+          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          next_stage_wrapper(ins, 0);
           break;
         case 6:
           cur_code_vals.splice(1, 1);
