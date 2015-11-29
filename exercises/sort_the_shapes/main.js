@@ -157,7 +157,7 @@ var main = function(ex) {
         result += format[i];
       }
     }
-    cur_code = result;
+    cur_code = format;
     cur_code_vals = result_arr;
     correct_op_index = 0;
     return;
@@ -224,7 +224,10 @@ var main = function(ex) {
   //Get peak of format in string representation
   function get_peak_str(format) {
     var indices = find_peak(format);
-    return format.substring(indices[0], indices[1] + 1);
+    var peak_format = format.substring(indices[0], indices[1] + 1);
+    var suffix = format.substring(indices[1] + 1, format.length);
+    var val_sub = format_code([peak_format, suffix]);
+    return val_sub[0];
   }
 
   function next_stage_wrapper(ins, correct_op) {
@@ -298,12 +301,13 @@ var main = function(ex) {
   }
 
   function draw_code(code, line) {
-    var x = 10;
     var line_height = 80;
     var line_space = 5;
+    var width = 200;
+    var x = ex.width() / 4 - width / 2;
     var code_well = ex.createCode(x, (line_height + line_space) * line +
       line_space, code, {
-      width: "200px",
+      width: width.toString().concat("px"),
       language: "python"
     });
     codes.push(code_well);
@@ -420,8 +424,9 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                generate_code("((T or F) or E)");
-                draw_code(cur_code, 0);
+                var format = "((T or F) or E)";
+                generate_code(format);;
+                draw_code(format_code([format])[0], 0);
                 draw_question("nextEval");
                 next.remove();
             });
