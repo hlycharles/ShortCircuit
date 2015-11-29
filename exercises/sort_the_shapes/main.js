@@ -423,13 +423,16 @@ var main = function(ex) {
         case ")":
           if (temp_height == max_height){
             end = i;
+            // Return immediately to ensure leftmost
+            return [start, end];
           }
-          temp_height --;
         default:
           break;
       }
     }
-    return [start, end];
+    // This line should never be reached
+    ex.alert("Error: Error occured in find_peak");
+    return [0, 0];
   }
 
   // format_to_bool: converts format to boolean
