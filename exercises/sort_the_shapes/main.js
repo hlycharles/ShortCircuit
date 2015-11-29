@@ -5,6 +5,17 @@
 var main = function(ex) {
 
   var falsey_value = ["None", "[]", "0", "\"\""];
+  // Options for truth tables
+  var a_options=["A", "T", "T", "F", "F"];
+  var b_options=["B", "T", "F", "T", "F"];
+  var or_result=["A or B", "T", "T", "T", "F"];
+  var and_result=["A and B", "T", "F", "F", "F"];
+  // For possible future implementation of De Morgan's Law
+  var nand = ["not (A and B)", "F", "T", "T", "T"]
+  var nand_equiv=["(not A) or (not B)", "F", "T", "T", "T"]
+  var nor = ["not (A or B)","F", "F", "F", "T"]
+  var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
+
   //The current step that is evaluated
   var cur_code = "";
   //The current values that are substituted into general code format
@@ -51,15 +62,7 @@ var main = function(ex) {
   function draw_truth_tables(type, x, y){
     ex.graphics.ctx.strokeRect(x, y, 150, 250);
     var margin= 50;
-    var a_options=["A", "T", "T", "F", "F"];
-    var b_options=["B", "T", "F", "T", "F"];
-    var or_result=["A or B", "T", "T", "T", "F"];
-    var and_result=["A and B", "T", "F", "F", "F"];
-    // For possible future implementation of De Morgan's Law
-    var nand = ["not (A and B)", "F", "T", "T", "T"]
-    var nand_equiv=["(not A) or (not B)", "F", "T", "T", "T"]
-    var nor = ["not (A or B)","F", "F", "F", "T"]
-    var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
+
 
 
     //draw vertical lines
@@ -356,11 +359,148 @@ var main = function(ex) {
             });
   }
 
-  // The partial evaluation function that performs one step of evaluation.
-  // Takes a string like "((T or F) or E)""
+  // is_balanced (for debugging and correctness of code)
+  // Takes a format string
+  // Returns true if the string is balanced
+  function is_balanced(format){
+    var temp_height = 0;
+    for (var i = 0; i < format.length; i++) {
+      if (temp_height < 0){
+        return false;
+      }
+      switch(format[i]){
+        case "(":
+          temp_height ++;
+          break;
+        case ")":
+          temp_height --;
+        default:
+          break;
+      }
+    }
+    return (temp_height == 0);
+  }
+
+  // height: measure the "height: of the format string
+  // Takes a balanced format string
+  // Returns the height (number of "(") in string
+  function height(format){
+    if (!is_balanced(format)){
+      // For correctness of the rest of the code
+      ex.alert("Error: Imbalanced Format");
+      return;
+    }
+    var result = 0;
+    for (var i = 0; i < format.length; i++) {
+      if (format[i] == "("){
+        result ++;
+      }
+    }
+    return result;
+  }
+
+  // find_peak: evaluates to the start and end of the "highest" expression
+  // Takes a balanced format stirng that has at least height 1
+  // Returns the start and end of the "highest" expression
+  function find_peak(format){
+    if (height(format) < 1){
+      ex.alert("Error: Base case format in find_peak");
+      return format;
+    }
+    var start = 0;
+    var end = 0;
+    var temp_height = 0;
+    var max_height = height(format);
+    for (var i = 0; i < format.length; i++) {
+      switch(format[i]){
+      // Notice the different order in the two cases
+        case "(":
+          temp_height ++;
+          if (temp_height == max_height){
+            start = i;
+          }
+          break;
+        case ")":
+          if (temp_height == max_height){
+            end = i;
+          }
+          temp_height --;
+        default:
+          break;
+      }
+    }
+    return [start, end];
+  }
+
+  // format_to_bool: converts format to boolean
+  // Takes a balanced format stirng with height 0 and no boolean operators
+  // Returns the boolean value of the expression
+  function format_to_bool(format){
+    if (height(format) < 1){
+      ex.alert("Error: Recursive case format in format_to_bool");
+      return undefined;
+    }
+    if (format.search("T") != -1){
+        return true;
+      }else if (format.search("F" != -1)){
+        return false;
+      }
+      // By design, all undefined should be in second argument of short circuit.
+      return undefined;
+  }
+ 
+  // bool_to_format: converts boolean to format
+  // Takes a boolean value
+  // Returns the format string of the value
+  function bool_to_format(bool){
+    if (bool){
+      return "T";
+    }else{
+      return "F";
+    }
+  }
+
+  // eval: performs one step of evaluation.
+  // Takes a balanced format string like "((T or F) or E)""
   // Returns a string that is evluated "T or E"
+  // eval would be much simpler if format were a tree datatype!!!
   function eval(format){
-    return format;
+    var prefix, suffix, result;
+    if (!is_balanced(format)){
+      // For correctness of the rest of the code
+      ex.alert("Error: Imbalanced Format");
+      return;
+    }else if (height(format) == 0){
+      // Base Case of eval
+      var prefix, suffix;
+      if (format.search("or") != -1){
+        var index = format.search("or");
+        prefix = format.substring(0, index);
+        suffix = format.substring(index + 2, format.length + 1);
+        result = format_to_bool(prefix) || format_to_bool(suffix);
+        return bool_to_format(result);
+      }else if (format.search("and" != -1)){
+        var index = format.search("and");
+        prefix = format.substring(0, index);
+        suffix = format.substring(index + 3, format.length + 1);
+        result = format_to_bool(prefix) && format_to_bool(suffix);
+        return bool_to_format(result);
+      }
+      // To expand the interface, add operators ABOVE this line
+      
+    }else{
+      // Recursive Case of eval
+      var start, end;
+      var peak = find_peak(format);
+      start = peak[0];
+      end = peak[1];
+      // Removing the parenthesis during slicing
+      prefix = format.substring(0, start);
+      var partial_result = eval(format.substring(start+1, end));
+      suffix = format.substring(end+1, format.length + 1);
+      result = prefix + partial_result + suffix;
+      return result; // Replace double space with single space
+    }
   }
 
   initialize();
