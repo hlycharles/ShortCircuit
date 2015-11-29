@@ -33,6 +33,9 @@ var main = function(ex) {
   /* UI variables */
   //small margin
   var s_margin = 10;
+
+  /* paragraph elements */
+  var text_list=[];
  
   function draw_truth_tables(type){
     if(type=="or"){
@@ -89,6 +92,7 @@ var main = function(ex) {
         }
         var text = ex.createParagraph(x+text_margin/2-align,y+margin-35,curCol[i],
                                 {size: text_size});
+        text_list.push(text);
         text_margin+=100;
       }
       margin+=50;
@@ -285,9 +289,13 @@ var main = function(ex) {
     next = ex.createButton(ex.width()-50,ex.height()-50,"next",
             {size:"small",color:"blue"}).on("click", function(){
                 ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
+                for(var i=0; i<text_list.length; i++){
+                  text_list[i].remove();
+                }
                 generate_code("(T or F) or E)");
                 draw_code(cur_code, 0);
                 draw_question("nextEval");
+                next.remove();
             });
   }
 
