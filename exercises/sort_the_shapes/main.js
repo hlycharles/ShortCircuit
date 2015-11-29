@@ -63,7 +63,18 @@ var main = function(ex) {
     ex.graphics.ctx.strokeRect(x, y, 150, 250);
     var margin= 50;
 
-
+    //Draw instruction
+    var text = ex.createParagraph(margin, margin,
+      "First make sure that you are familiar with the truth table", {
+        size: "large",
+        width: ex.width()
+      });
+    text_list.push(text);
+    var text2 = ex.createParagraph(margin, margin * 2,
+      "Click 'next' to continue", {
+        size: "large"
+      });
+    text_list.push(text2);
 
     //draw vertical lines
     for(var i=0; i<2; i++){
@@ -451,7 +462,7 @@ var main = function(ex) {
       // By design, all undefined should be in second argument of short circuit.
       return undefined;
   }
- 
+
   // bool_to_format: converts boolean to format
   // Takes a boolean value
   // Returns the format string of the value
@@ -490,7 +501,7 @@ var main = function(ex) {
         return bool_to_format(result);
       }
       // To expand the interface, add operators ABOVE this line
-      
+
     }else{
       // Recursive Case of eval
       var start, end;
