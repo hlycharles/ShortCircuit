@@ -36,7 +36,7 @@ var main = function(ex) {
 
   /* paragraph elements */
   var text_list=[];
- 
+
   function draw_truth_tables(type){
     if(type=="or"){
       var x=(ex.width()/2) - 200;
@@ -104,11 +104,12 @@ var main = function(ex) {
     return "(1/0)";
   }
 
-  //Generate code according to given format. "F" stands for falsey value, "T" stands for
-  //  truthy value and "E" stands for expressions that throw exceptions
+  //Generate code according to given format. "F" stands for falsey value, "T"
+  //  stands for truthy value and "E" stands for expressions that
+  //  throw exceptions
   //e.g. format "((T or F) and E)" might give "((1 or []) and (1/0))"
-  //In this case, store values "1", "[]", "(1/0)" in cur_code_vals and store the string
-  // "((1 or []) and (1/0))" into cur_code
+  //In this case, store values "1", "[]", "(1/0)" in cur_code_vals and store
+  //the string "((1 or []) and (1/0))" into cur_code
   function generate_code(format) {
     var result = "";
     var result_arr = [];
@@ -153,27 +154,44 @@ var main = function(ex) {
     return;
   }
 
+  function next_stage_wrapper(ins, correct_op) {
+    draw_instruction(ins);
+    cur_stage++;
+    draw_drop_down();
+    correct_op_index = correct_op;
+  }
+
   //Proceed to the next stage of exercise
   function to_next_stage() {
     if (question_type == 1) {
       switch ((cur_stage)) {
         case 0:
-          draw_instruction("Is this value truthy or falsey?");
-          cur_stage++;
-          draw_drop_down();
-          correct_op_index = 0;
+          next_stage_wrapper("Is this value truthy or falsey?", 0);
           break;
         case 1:
-          draw_instruction("Does short-circuit evaluation occur?");
-          cur_stage++;
-          draw_drop_down();
-          correct_op_index = 0;
+          next_stage_wrapper("Does short-circuit evaluation occur?", 0);
           break;
         case 2:
           cur_code_vals.splice(1, 1);
           format_code("T or E");
           draw_code(cur_code, 1);
+          next_stage_wrapper("Which expression is evaluated next?", 0);
           break;
+        case 3:
+          next_stage_wrapper("Is this value truthy or falsy?", 0);
+          break;
+        case 4:
+          next_stage_wrapper("Does short-circuit evaluation occur?", 0);
+          break;
+        case 5:
+          cur_code_vals.splice(1, 1);
+          format_code("T");
+          draw_code(cur_code, 2);
+          draw_instruction("Congratulations, you have completed this exercies");
+          //Clear other UI elements
+          drop_down.remove();
+          drop_down = undefined;
+          submit_ans_button.remove();
         default:
           cur_stage++;
           break;
@@ -188,6 +206,7 @@ var main = function(ex) {
       return;
     }
     if (correct_op_index == chosen_op_index) {
+      ex.alert("Correct", {color: "green"});
       to_next_stage();
     }else {
       ex.showFeedback(generate_feedback());
@@ -204,7 +223,8 @@ var main = function(ex) {
     var x = 10;
     var line_height = 80;
     var line_space = 5;
-    var code_well = ex.createCode(x, (line_height + line_space) * line + line_space, code, {
+    var code_well = ex.createCode(x, (line_height + line_space) * line +
+      line_space, code, {
       width: "200px",
       language: "python"
     });
@@ -222,6 +242,14 @@ var main = function(ex) {
     });
   }
 
+  function draw_dropdown_w_op(defalt, options) {
+    var drop_y = 40;
+    drop_down = ex.createDropdown(s_margin + ex.width() / 2, drop_y, defalt, {
+      color: "light-blue",
+      elements: options
+    });
+  }
+
   function draw_drop_down() {
     if (drop_down != undefined) {
       drop_down.remove();
@@ -230,32 +258,47 @@ var main = function(ex) {
     if (question_type == 1) {
       switch (cur_stage) {
         case 0:
-        //Get around using variables
-        var elems = {};
-        elems[cur_code_vals[0]] = function() {chosen_op_index = 0};
-        elems[cur_code_vals[1]] = function() {chosen_op_index = 1};
-        drop_down = ex.createDropdown(s_margin + ex.width() / 2, drop_y, cur_code_vals[0], {
-          color: "light-blue",
-          elements: elems
-        });
+          //Get around using variables
+          var elems = {};
+          elems[cur_code_vals[0]] = function() {chosen_op_index = 0};
+          elems[cur_code_vals[1]] = function() {chosen_op_index = 1};
+          draw_dropdown_w_op(cur_code_vals[0], elems);
+          chosen_op_index = 0;
           break;
         case 1:
-          drop_down = ex.createDropdown(s_margin + ex.width() / 2, drop_y, "Truthy", {
-            color: "light-blue",
-            elements: {
-              Truthy: function() {chosen_op_index = 0},
-              Falsey: function() {chosen_op_index = 1}
-            }
-          })
+          var elems = {};
+          elems["Truthy"] = function(){chosen_op_index = 0};
+          elems["Falsey"] = function(){chosen_op_index = 1};
+          draw_dropdown_w_op("Falsey", elems);
+          chosen_op_index = 1;
           break;
         case 2:
-          drop_down = ex.createDropdown(s_margin + ex.width() / 2, drop_y, "Yes", {
-            color: "light-blue",
-            elements: {
-              Yes: function() {chosen_op_index = 0},
-              No: function() {chosen_op_index = 1}
-            }
-          })
+          var elems = {};
+          elems["Yes"] = function(){chosen_op_index = 0};
+          elems["No"] = function(){chosen_op_index = 1};
+          draw_dropdown_w_op("No", elems);
+          chosen_op_index = 1;
+          break;
+        case 3:
+          var elems = {};
+          elems[cur_code_vals[0]] = function() {chosen_op_index = 0};
+          elems[cur_code_vals[1]] = function() {chosen_op_index = 1};
+          draw_dropdown_w_op(cur_code_vals[1], elems);
+          chosen_op_index = 1;
+          break;
+        case 4:
+          var elems = {};
+          elems["Truthy"] = function(){chosen_op_index = 0};
+          elems["Falsey"] = function(){chosen_op_index = 1};
+          draw_dropdown_w_op("Truthy", elems);
+          chosen_op_index = 0;
+          break;
+        case 5:
+          var elems = {};
+          elems["Yes"] = function() {chosen_op_index = 0};
+          elems["No"] = function() {chosen_op_index = 1};
+          draw_dropdown_w_op("Yes", elems);
+          chosen_op_index = 0;
           break;
         default:
           break;
@@ -266,7 +309,8 @@ var main = function(ex) {
   //Draw the button that user clicks to submit their answer
   function draw_submit_ans_button() {
     var button_y = 80;
-    submit_ans_button = ex.createButton(ex.width() / 2 + s_margin, button_y, "Submit", {
+    submit_ans_button = ex.createButton(ex.width() / 2 + s_margin, button_y,
+      "Submit", {
       color: "lightBlue",
       size: "medium"
     });
@@ -292,7 +336,7 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                generate_code("(T or F) or E)");
+                generate_code("((T or F) or E)");
                 draw_code(cur_code, 0);
                 draw_question("nextEval");
                 next.remove();
