@@ -46,12 +46,22 @@ var main = function(ex) {
       var x=(ex.width()/2)+50;
       var y=(ex.height()/2)-150;
     }
+  }
+
+  function draw_truth_tables(type, x, y){
     ex.graphics.ctx.strokeRect(x, y, 150, 250);
     var margin= 50;
     var a_options=["A", "T", "T", "F", "F"];
     var b_options=["B", "T", "F", "T", "F"];
     var or_result=["A or B", "T", "T", "T", "F"];
     var and_result=["A and B", "T", "F", "F", "F"];
+    // For possible future implementation of De Morgan's Law
+    var nand = ["not (A and B)", "F", "T", "T", "T"]
+    var nand_equiv=["(not A) or (not B)", "F", "T", "T", "T"]
+    var nor = ["not (A or B)","F", "F", "F", "T"]
+    var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
+
+
     //draw vertical lines
     for(var i=0; i<2; i++){
       ex.graphics.ctx.moveTo(x+margin,y);
@@ -71,10 +81,13 @@ var main = function(ex) {
       ex.graphics.ctx.stroke();
       //draw text
       for(var j=0; j<3; j++){
-        if(j==0){curCol=a_options;}
-        else if(j==1){curCol=b_options;}
+        if(j==0){
+          curCol=a_options;
+        }
+        else if(j==1){
+          curCol=b_options;
+        }
         else {
-
           if(type=="or"){
             curCol=or_result;
             if(i==0){
@@ -82,7 +95,7 @@ var main = function(ex) {
               align=17;
             }
           }
-          else{
+          else if(type=="and"){
             curCol=and_result;
             if(i==0){
               text_size="small";
@@ -138,7 +151,7 @@ var main = function(ex) {
 
   //Substitude values in cur_code_vals into format
   //e.g. if cur_code_vals = ["1", "0"], then
-  //  format_code("(T and F)") returns "(1 or 0)"
+  //  format_code("(T and F)") returns "(1 and 0)"
   function format_code(format) {
     var result = "";
     var cur_replace = 0;
@@ -328,8 +341,8 @@ var main = function(ex) {
 
   //@Should be changed so that the initial question is about truth table
   function initialize() {
-    draw_truth_tables("or");
-    draw_truth_tables("and");
+    draw_truth_tables("or", (ex.width()/2) - 200, (ex.height()/2) - 150);
+    draw_truth_tables("and", (ex.width()/2)+50, (ex.height()/2)-150);
     next = ex.createButton(ex.width()-50,ex.height()-50,"next",
             {size:"small",color:"blue"}).on("click", function(){
                 ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
@@ -341,6 +354,13 @@ var main = function(ex) {
                 draw_question("nextEval");
                 next.remove();
             });
+  }
+
+  // The partial evaluation function that performs one step of evaluation.
+  // Takes a string like "((T or F) or E)""
+  // Returns a string that is evluated "T or E"
+  function eval(format){
+    return format;
   }
 
   initialize();
