@@ -173,7 +173,7 @@ var main = function(ex) {
         result += format[i];
       }
     }
-    cur_code = result;
+    cur_code = format;
     cur_code_vals = result_arr;
     correct_op_index = 0;
     return;
@@ -181,62 +181,117 @@ var main = function(ex) {
 
   //Substitude values in cur_code_vals into format
   //e.g. if cur_code_vals = ["1", "0"], then
-  //  format_code("(T and F)") returns "(1 and 0)"
-  function format_code(format) {
-    var result = "";
+  //  format_code(["(T and F)"]) returns ["(1 and 0)"]
+  function format_code(formats) {
     var cur_replace = 0;
+    for (var i = 0; i < formats.length; i++) {
+      var result = "";
+      var format = formats[i];
+      for (var j = 0; j < format.length; j++) {
+        if (format[j] == "F" || format[j] == "E" || format[j] == "T") {
+          result += cur_code_vals[cur_replace];
+          cur_replace++;
+        }else {
+          result += format[j];
+        }
+      }
+      formats[i] = result;
+    }
+    return formats;
+  }
+
+  //Return the index of first operator in format
+  function find_op(format) {
     for (var i = 0; i < format.length; i++) {
-      if (format[i] == "F" || format[i] == "E" || format[i] == "T") {
-        result += cur_code_vals[cur_replace];
-        cur_replace++;
-      }else {
-        result += format[i];
+      if (format[i] == "o" && (i + 1) < format.length && format[i + 1] == "r") {
+        return i;
+      }else if(format[i] == "a" && (i + 2) < format.length &&
+               format[i + 1] == "n" && format[i + 2] == "d") {
+        return i;
       }
     }
-    cur_code = result;
-    return;
+    return -1;
+  }
+
+  //Find the next expression that is after index value stored in 'start'
+  function find_next_exp(format, start) {
+    var left_count = 0;
+    while (format[start] != " ") {
+      start++;
+    }
+    start++;
+    var start_index = start;
+    if (format[start] != "(") {
+      return [start, start];
+    }
+    left_count++;
+    while (left_count != 0) {
+      start++;
+      if (format[start] == "(") {
+        left_count++;
+      }else if (format[start] == ")") {
+        left_count--;
+      }
+    }
+    var end_index = start;
+    return [start_index, end_index];
+  }
+
+  //Get peak of format in string representation
+  function get_peak_str(format) {
+    var indices = find_peak(format);
+    var peak_format = format.substring(indices[0], indices[1] + 1);
+    var val_sub = format_code([peak_format]);
+    return val_sub[0];
   }
 
   function next_stage_wrapper(ins, correct_op) {
-    draw_instruction(ins);
-    cur_stage++;
+    draw_instruction (ins);
     draw_drop_down();
     correct_op_index = correct_op;
   }
 
   //Proceed to the next stage of exercise
   function to_next_stage() {
+    cur_stage++;
     if (question_type == 1) {
       switch ((cur_stage)) {
-        case 0:
-          next_stage_wrapper("Is this value truthy or falsey?", 0);
-          break;
+
         case 1:
-          next_stage_wrapper("Does short-circuit evaluation occur?", 0);
+          var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
+          next_stage_wrapper(ins, 0);
           break;
         case 2:
-          cur_code_vals.splice(1, 1);
-          format_code("T or E");
-          draw_code(cur_code, 1);
-          next_stage_wrapper("Which expression is evaluated next?", 0);
+          var ins = "Is there short-circuit evaluation in ";
+          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          next_stage_wrapper(ins, 0);
           break;
         case 3:
-          next_stage_wrapper("Is this value truthy or falsy?", 0);
+          cur_code_vals.splice(1, 1);
+          var code_val = format_code(["(T or E)"]);
+          draw_code(code_val[0], 1);
+          next_stage_wrapper("Which expression is evaluated next?", 0);
           break;
         case 4:
-          next_stage_wrapper("Does short-circuit evaluation occur?", 0);
+          var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
+          next_stage_wrapper(ins, 0);
           break;
         case 5:
+          var ins = "Is there short-circuit evaluation in ";
+          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          next_stage_wrapper(ins, 0);
+          break;
+        case 6:
           cur_code_vals.splice(1, 1);
-          format_code("T");
-          draw_code(cur_code, 2);
-          draw_instruction("Congratulations, you have completed this exercies");
+          var code_val = format_code(["T"]);
+          draw_code(code_val[0], 2);
+          draw_instruction("Congratulations, you have completed this exercise");
           //Clear other UI elements
           drop_down.remove();
           drop_down = undefined;
           submit_ans_button.remove();
         default:
-          cur_stage++;
+          //
           break;
       }
     }
@@ -263,12 +318,13 @@ var main = function(ex) {
   }
 
   function draw_code(code, line) {
-    var x = 10;
     var line_height = 80;
     var line_space = 5;
+    var width = 200;
+    var x = ex.width() / 4 - width / 2;
     var code_well = ex.createCode(x, (line_height + line_space) * line +
       line_space, code, {
-      width: "200px",
+      width: width.toString().concat("px"),
       language: "python"
     });
     codes.push(code_well);
@@ -302,10 +358,16 @@ var main = function(ex) {
       switch (cur_stage) {
         case 0:
           //Get around using variables
+          var first_eval = find_peak(cur_code);
+          var left = cur_code.substring(first_eval[0], first_eval[1] + 1);
+          //Start search for the next expression at index of an operator
+          var second_eval = find_next_exp(cur_code, first_eval[1] + 2);
+          var right = cur_code.substring(second_eval[0], second_eval[1] + 1);
+          var left_right_val = format_code([left, right]);
           var elems = {};
-          elems[cur_code_vals[0]] = function() {chosen_op_index = 0};
-          elems[cur_code_vals[1]] = function() {chosen_op_index = 1};
-          draw_dropdown_w_op(cur_code_vals[0], elems);
+          elems[left_right_val[0]] = function() {chosen_op_index = 0};
+          elems[left_right_val[1]] = function() {chosen_op_index = 1};
+          draw_dropdown_w_op(left_right_val[0], elems);
           chosen_op_index = 0;
           break;
         case 1:
@@ -379,8 +441,9 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                generate_code("((T or F) or E)");
-                draw_code(cur_code, 0);
+                var format = "((T or F) or E)";
+                generate_code(format);;
+                draw_code(format_code([format])[0], 0);
                 draw_question("nextEval");
                 next.remove();
             });
@@ -430,29 +493,23 @@ var main = function(ex) {
   // Takes a balanced format stirng that has at least height 1
   // Returns the start and end of the "highest" expression
   function find_peak(format){
-    if (height(format) < 1){
+    if (height(format) < 1) {
       ex.alert("Error: Base case format in find_peak");
       return format;
     }
-    var start = 0;
     var end = 0;
-    var temp_height = 0;
+    var start = 0;
     var max_height = height(format);
     for (var i = 0; i < format.length; i++) {
       switch(format[i]){
       // Notice the different order in the two cases
         case "(":
-          temp_height ++;
-          if (temp_height == max_height){
-            start = i;
-          }
+          start = i;
           break;
         case ")":
-          if (temp_height == max_height){
-            end = i;
-            // Return immediately to ensure leftmost
-            return [start, end];
-          }
+          end = i;
+          // Return immediately to ensure leftmost
+          return [start, end];
         default:
           break;
       }
@@ -466,7 +523,7 @@ var main = function(ex) {
   // Takes a balanced format stirng with height 0 and no boolean operators
   // Returns the boolean value of the expression
   function format_to_bool(format){
-    if (height(format) < 1){
+    if (height(format) >= 1){
       ex.alert("Error: Recursive case format in format_to_bool");
       return undefined;
     }
