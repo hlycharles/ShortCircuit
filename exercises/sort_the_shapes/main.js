@@ -7,9 +7,9 @@ var main = function(ex) {
   var falsey_value = ["None", "[]", "0", "\"\""];
   // Options for truth tables
   var a_options=["A", "T", "T", "F", "F"];
-  var b_options=["B", "T", "F", "T", "F"];
-  var or_result=["A or B", "T", "T", "T", "F"];
-  var and_result=["A and B", "T", "F", "F", "F"];
+  var b_options=["B", "1", "0", "1", "0"];
+  var or_result=["A or B", "T", "T", "1", "0"];
+  var and_result=["A and B", "1", "0", "F", "F"];
   // For possible future implementation of De Morgan's Law
   var nand = ["not (A and B)", "F", "T", "T", "T"]
   var nand_equiv=["(not A) or (not B)", "F", "T", "T", "T"]
@@ -93,10 +93,26 @@ var main = function(ex) {
       ex.graphics.ctx.moveTo(x,y+margin);
       ex.graphics.ctx.lineTo(x+150,y+margin);
       ex.graphics.ctx.stroke();
+     
+      //highlight short circuited 
+
       //draw text
       for(var j=0; j<3; j++){
         if(j==0){
           curCol=a_options;
+          //highlight
+          if((i==2 || i==3) && (type=="or")){
+            ex.graphics.ctx.globalAlpha=0.4;
+            ex.graphics.ctx.fillStyle="yellow";
+            ex.graphics.ctx.fillRect(x+100, y+margin, 50, 50);
+            ex.graphics.ctx.globalAlpha=1;
+          }
+          if((i==0 || i==1) && (type=="and")){
+            ex.graphics.ctx.globalAlpha=0.4;
+            ex.graphics.ctx.fillStyle="yellow";
+            ex.graphics.ctx.fillRect(x+100, y+margin, 50, 50);
+            ex.graphics.ctx.globalAlpha=1;
+          }
         }
         else if(j==1){
           curCol=b_options;
