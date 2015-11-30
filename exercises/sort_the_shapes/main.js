@@ -1,5 +1,5 @@
 /**
- * @file Sort the Shapes
+ * @file Short-circuit Evaluation
  * @Luyao Hou, Abhy Vytheeswaran, Ai Li
  */
 var main = function(ex) {
@@ -23,6 +23,8 @@ var main = function(ex) {
   var cur_code_vals = [];
   //keep all code-wells drawn so that it will be easy to remove them
   var codes = [];
+  //Current level of codes drawn
+  var code_level = 0;
 
   //UI elements
   var instruction = undefined;
@@ -64,15 +66,16 @@ var main = function(ex) {
     var margin= 50;
 
     //Draw instruction
-    var text = ex.createParagraph(margin, margin,
-      "First make sure that you are familiar with the truth table", {
-        size: "large",
+    var ins = "First make sure that you are familiar with the truth table. ";
+    ins = ins.concat("Yellow blocks are where short-circuit happens.");
+    var text = ex.createParagraph(margin, margin, ins, {
+        size: "medium",
         width: ex.width()
       });
     text_list.push(text);
     var text2 = ex.createParagraph(margin, margin * 2,
       "Click 'next' to continue", {
-        size: "large"
+        size: "medium"
       });
     text_list.push(text2);
 
@@ -93,8 +96,8 @@ var main = function(ex) {
       ex.graphics.ctx.moveTo(x,y+margin);
       ex.graphics.ctx.lineTo(x+150,y+margin);
       ex.graphics.ctx.stroke();
-     
-      //highlight short circuited 
+
+      //highlight short circuited
 
       //draw text
       for(var j=0; j<3; j++){
@@ -245,6 +248,24 @@ var main = function(ex) {
     return val_sub[0];
   }
 
+  //Check if the exercise has finished
+  function is_finished(format) {
+    var formatter_count = 0;
+    //assume there is at least 1 T, F or E in format
+    for (var i = 0; i < format.length; i++) {
+      if (format[i] == "T" || format[i] == "F" || format[i] == "E") {
+        formatter_count++;
+      }
+      if (formatter_count > 1) {
+        return false;
+      }
+    }
+    if (formatter_count == 1) {
+      return true;
+    }
+    return undefined;
+  }
+
   function next_stage_wrapper(ins, correct_op) {
     draw_instruction (ins);
     draw_drop_down();
@@ -253,48 +274,87 @@ var main = function(ex) {
 
   //Proceed to the next stage of exercise
   function to_next_stage() {
-    cur_stage++;
     if (question_type == 1) {
       switch ((cur_stage)) {
-
-        case 1:
+        case 0:
+          cur_stage++;
           var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
           next_stage_wrapper(ins, 0);
+          break;
+        case 1:
+          cur_stage++;
+          var ins = "Is there short-circuit evaluation in ";
+          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          var peak_indices = find_peak(cur_code);
+          var peak_form = cur_code.substring(peak_indices[0],peak_indices[1]+1);
+          var op_index = find_op(peak_form);
+          var left = peak_form.substring(1, op_index - 1);
+          var right = find_next_exp(peak_form, op_index);
+          var is_short_circuit = false;
+          var operator = "or";
+          if (peak_form[op_index] == "a") {
+            operator = "and";
+          }
+          if (get_result(left, right, operator) == "L") {
+            is_short_circuit = true;
+          }
+          if (is_short_circuit) {
+            next_stage_wrapper(ins, 0);
+            //Skip the question about second argument
+            cur_stage = 3;
+          }else {
+            next_stage_wrapper(ins, 1);
+          }
           break;
         case 2:
-          var ins = "Is there short-circuit evaluation in ";
-          ins = ins.concat(get_peak_str(cur_code).concat("?"));
-          next_stage_wrapper(ins, 0);
+          cur_stage++;
+          var ins = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
+          next_stage_wrapper(ins, 1);
           break;
         case 3:
-          cur_code_vals.splice(1, 1);
-          var code_val = format_code(["(T or E)"]);
-          draw_code(code_val[0], 1);
-          next_stage_wrapper("Which expression is evaluated next?", 0);
+          cur_stage++;
+          //cur_code_vals.splice(1, 1);
+          //var code_val = format_code(["(T or E)"]);
+          //draw_code(code_val[0], 1);
+          next_stage_wrapper("What does the expression evaluate to?", 0);
           break;
         case 4:
-          var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
-          next_stage_wrapper(ins, 0);
-          break;
-        case 5:
-          var ins = "Is there short-circuit evaluation in ";
-          ins = ins.concat(get_peak_str(cur_code).concat("?"));
-          next_stage_wrapper(ins, 0);
-          break;
-        case 6:
+          //case where a new level of code starts
           cur_code_vals.splice(1, 1);
-          var code_val = format_code(["T"]);
-          draw_code(code_val[0], 2);
-          draw_instruction("Congratulations, you have completed this exercise");
-          //Clear other UI elements
-          drop_down.remove();
-          drop_down = undefined;
-          submit_ans_button.remove();
+          cur_code = eval(cur_code);
+          var code_val = format_code([cur_code]);
+          code_level++;
+          draw_code(code_val[0], code_level);
+          if (is_finished(cur_code)) {
+            draw_instruction("Congratulations, you have completed this exercise");
+            //Clear other UI elements
+            drop_down.remove();
+            drop_down = undefined;
+            submit_ans_button.remove();
+            break;
+          }
+          cur_stage = 0;
+          to_next_stage();
+          break;
         default:
-          //
           break;
       }
     }
+  }
+
+  //Take in two operands and an operator, returns the result of the operation
+  function get_result(left, right, operator) {
+    if (operator == "or") {
+      if (left == "T") {
+        return "L";
+      }
+      return "R";
+    }
+    //If the operator is "and"
+    if (left == "F") {
+      return "L";
+    }
+    return "R";
   }
 
   //Check if user selects the correct answer from drop down
@@ -386,24 +446,24 @@ var main = function(ex) {
           break;
         case 3:
           var elems = {};
-          elems[cur_code_vals[0]] = function() {chosen_op_index = 0};
-          elems[cur_code_vals[1]] = function() {chosen_op_index = 1};
-          draw_dropdown_w_op(cur_code_vals[1], elems);
-          chosen_op_index = 1;
-          break;
-        case 4:
-          var elems = {};
           elems["Truthy"] = function(){chosen_op_index = 0};
           elems["Falsey"] = function(){chosen_op_index = 1};
           draw_dropdown_w_op("Truthy", elems);
           chosen_op_index = 0;
           break;
-        case 5:
+        case 4:
+          var peak_indices = find_peak(cur_code);
+          var peak_form = cur_code.substring(peak_indices[0],peak_indices[1]+1);
+          var op_index = find_op(peak_form);
+          var left = peak_form.substring(1, op_index - 1);
+          var right_indices = find_next_exp(peak_form, op_index);
+          var right = peak_form.substring(right_indices[0], right_indices[1]+1);
+          var vals = format_code([left, right]);
           var elems = {};
-          elems["Yes"] = function() {chosen_op_index = 0};
-          elems["No"] = function() {chosen_op_index = 1};
-          draw_dropdown_w_op("Yes", elems);
-          chosen_op_index = 0;
+          elems[vals[0]] = function() {chosen_op_index = 0};
+          elems[vals[1]] = function() {chosen_op_index = 1};
+          draw_dropdown_w_op(vals[1], elems);
+          chosen_op_index = 1;
           break;
         default:
           break;
@@ -550,7 +610,7 @@ var main = function(ex) {
   // eval: performs one step of evaluation.
   // Takes a balanced format string like "((T or F) or E)""
   // Returns a string that is evluated "T or E"
-  // eval would be much simpler if format were a tree datatype!!!
+  // eval would be much simpler if format were a tree datatype!!! *_*
   function eval(format){
     var prefix, suffix, result;
     if (!is_balanced(format)){
