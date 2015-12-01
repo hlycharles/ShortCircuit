@@ -313,10 +313,10 @@ var main = function(ex) {
           break;
         case 3:
           cur_stage++;
-          //cur_code_vals.splice(1, 1);
-          //var code_val = format_code(["(T or E)"]);
-          //draw_code(code_val[0], 1);
-          next_stage_wrapper("What does the expression evaluate to?", 0);
+          var peak_str = get_peak_str(cur_code);
+          ins = "What does ";
+          ins = ins.concat(peak_str).concat(" evaluate to?");
+          next_stage_wrapper(ins, 0);
           break;
         case 4:
           //case where a new level of code starts
@@ -360,7 +360,7 @@ var main = function(ex) {
   //Check if user selects the correct answer from drop down
   function check_answer() {
     if (correct_op_index == undefined) {
-      ex.showFeedback("Application error");
+      console.log("Application error");
       return;
     }
     if (correct_op_index == chosen_op_index) {
