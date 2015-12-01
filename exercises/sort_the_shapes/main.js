@@ -240,6 +240,30 @@ var main = function(ex) {
     return [start_index, end_index];
   }
 
+  //Extract operator out of a format
+  function get_op(format) {
+    var index = find_op(format);
+    if (format[index] == "o") {
+      return "or";
+    }
+    return "and";
+  }
+
+  //Get the left and right hand expression of a height 0 expression
+  function get_left_right(exp) {
+    var first_space = exp.search(" ");
+    var left = exp.substring(1, first_space);
+    var remaining = exp.substring(first_space + 1, exp.length);
+    var second_space = remaining.search(" ");
+    var right = exp.substring(second_space + 1, remaining.length + 1);
+    return [left, right];
+  }
+
+  function get_peak_format(format) {
+    var indices = find_peak(format);
+    return format.substring(indices[0], indices[1] + 1);
+  }
+
   //Get peak of format in string representation
   function get_peak_str(format) {
     var indices = find_peak(format);
@@ -278,8 +302,15 @@ var main = function(ex) {
       switch ((cur_stage)) {
         case 0:
           cur_stage++;
+          var peak_form = get_peak_format(cur_code);
+          var left_right = get_left_right(peak_form);
+          var correct_option = 0;
+          //If the first operand is not truthy
+          if (left_right[0] != "T") {
+            correct_option = 1;
+          }
           var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
-          next_stage_wrapper(ins, 0);
+          next_stage_wrapper(ins, correct_option);
           break;
         case 1:
           cur_stage++;
@@ -308,19 +339,44 @@ var main = function(ex) {
           break;
         case 2:
           cur_stage++;
+          var peak_form = get_peak_format(cur_code);
+          var left_right = get_left_right(peak_form);
+          var correct_option = 0;
+          //If the second operand is not truthy
+          if (left_right[1] != "T") {
+            correct_option = 1;
+          }
           var ins = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
-          next_stage_wrapper(ins, 1);
+          next_stage_wrapper(ins, correct_option);
           break;
         case 3:
           cur_stage++;
           var peak_str = get_peak_str(cur_code);
+          var peak_form = get_peak_format(cur_code);
+          var left_right = get_left_right(peak_form);
+          var operator = get_op(peak_form);
+          var correct_option = 0;
+          //Case where the code evaluates to the value on the right
+          if (get_result(left_right[0], left_right[1], operator) == "R") {
+            correct_option = 1;
+          }
+
           ins = "What does ";
           ins = ins.concat(peak_str).concat(" evaluate to?");
-          next_stage_wrapper(ins, 0);
+          next_stage_wrapper(ins, correct_option);
           break;
         case 4:
           //case where a new level of code starts
-          cur_code_vals.splice(1, 1);
+          var peak_form = get_peak_format(cur_code);
+          var operator = get_op(peak_form);
+          var left_right = get_left_right(peak_form);
+          //The expression evaluates to value on the left
+          if (get_result(left_right[0], left_right[1], operator) == "L") {
+            cur_code_vals.splice(1, 1);
+            //The expression evaluates to value on the right
+          }else {
+            cur_code_vals.splice(0, 1);
+          }
           cur_code = eval(cur_code);
           var code_val = format_code([cur_code]);
           code_level++;
@@ -452,8 +508,7 @@ var main = function(ex) {
           chosen_op_index = 0;
           break;
         case 4:
-          var peak_indices = find_peak(cur_code);
-          var peak_form = cur_code.substring(peak_indices[0],peak_indices[1]+1);
+          var peak_form = get_peak_format(cur_code);
           var op_index = find_op(peak_form);
           var left = peak_form.substring(1, op_index - 1);
           var right_indices = find_next_exp(peak_form, op_index);
@@ -501,7 +556,7 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                var format = "((T or F) or E)";
+                var format = "((T and F) or T)";
                 generate_code(format);;
                 draw_code(format_code([format])[0], 0);
                 draw_question("nextEval");
@@ -649,6 +704,7 @@ var main = function(ex) {
       return result; // Replace double space with single space
     }
   }
+
 
   initialize();
 
