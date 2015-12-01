@@ -255,19 +255,21 @@ var main = function(ex) {
     var left = exp.substring(1, first_space);
     var remaining = exp.substring(first_space + 1, exp.length);
     var second_space = remaining.search(" ");
-    var right = exp.substring(second_space + 1, remaining.length + 1);
+    var right = remaining.substring(second_space + 1, remaining.length - 1);
     return [left, right];
   }
 
   function get_peak_format(format) {
+    if (height(format) == 1) {
+      return format;
+    }
     var indices = find_peak(format);
     return format.substring(indices[0], indices[1] + 1);
   }
 
   //Get peak of format in string representation
   function get_peak_str(format) {
-    var indices = find_peak(format);
-    var peak_format = format.substring(indices[0], indices[1] + 1);
+    var peak_format = get_peak_format(format);
     var val_sub = format_code([peak_format]);
     return val_sub[0];
   }
@@ -299,10 +301,13 @@ var main = function(ex) {
   //Proceed to the next stage of exercise
   function to_next_stage() {
     if (question_type == 1) {
+      console.log("cur_code".concat(cur_code));
+      console.log("cur_stage".concat(cur_stage));
       switch ((cur_stage)) {
         case 0:
           cur_stage++;
           var peak_form = get_peak_format(cur_code);
+          console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
           var correct_option = 0;
           //If the first operand is not truthy
@@ -340,7 +345,9 @@ var main = function(ex) {
         case 2:
           cur_stage++;
           var peak_form = get_peak_format(cur_code);
+          console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
+          console.log("get left right".concat(left_right[0]).concat(left_right[1]));
           var correct_option = 0;
           //If the second operand is not truthy
           if (left_right[1] != "T") {
@@ -615,6 +622,7 @@ var main = function(ex) {
     var end = 0;
     var start = 0;
     var max_height = height(format);
+    var left_count = 0;
     for (var i = 0; i < format.length; i++) {
       switch(format[i]){
       // Notice the different order in the two cases
@@ -625,6 +633,11 @@ var main = function(ex) {
           end = i;
           // Return immediately to ensure leftmost
           return [start, end];
+        case " ":
+          if (left_count == 1) {
+            return [start + 1, i - 1];
+          }
+          break;
         default:
           break;
       }
@@ -704,7 +717,6 @@ var main = function(ex) {
       return result; // Replace double space with single space
     }
   }
-
 
   initialize();
 
