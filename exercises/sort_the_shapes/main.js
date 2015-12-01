@@ -321,8 +321,7 @@ var main = function(ex) {
           cur_stage++;
           var ins = "Is there short-circuit evaluation in ";
           ins = ins.concat(get_peak_str(cur_code).concat("?"));
-          var peak_indices = find_peak(cur_code);
-          var peak_form = cur_code.substring(peak_indices[0],peak_indices[1]+1);
+          var peak_form = get_peak_format(cur_code);
           var op_index = find_op(peak_form);
           var left = peak_form.substring(1, op_index - 1);
           var right = find_next_exp(peak_form, op_index);
@@ -563,7 +562,7 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                var format = "((T and F) or T)";
+                var format = "(T and (T or F))";
                 generate_code(format);;
                 draw_code(format_code([format])[0], 0);
                 draw_question("nextEval");
