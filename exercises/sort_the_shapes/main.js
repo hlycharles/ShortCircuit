@@ -301,13 +301,10 @@ var main = function(ex) {
   //Proceed to the next stage of exercise
   function to_next_stage() {
     if (question_type == 1) {
-      console.log("cur_code".concat(cur_code));
-      console.log("cur_stage".concat(cur_stage));
       switch ((cur_stage)) {
         case 0:
           cur_stage++;
           var peak_form = get_peak_format(cur_code);
-          console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
           var correct_option = 0;
           //If the first operand is not truthy
@@ -563,7 +560,7 @@ var main = function(ex) {
                   text_list[i].remove();
                 }
                 var format = "(T and (T or F))";
-                generate_code(format);;
+                generate_code(format);
                 draw_code(format_code([format])[0], 0);
                 draw_question("nextEval");
                 next.remove();
@@ -626,6 +623,7 @@ var main = function(ex) {
       switch(format[i]){
       // Notice the different order in the two cases
         case "(":
+          left_count++;
           start = i;
           break;
         case ")":
