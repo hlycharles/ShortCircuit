@@ -303,7 +303,11 @@ var main = function(ex) {
     if (question_type == 1) {
       switch ((cur_stage)) {
         case 0:
+          var ins = "Which part of code is going to be evaluated?"
+          next_stage_wrapper(ins, 0);
           cur_stage++;
+          break;
+        case 1:
           var peak_form = get_peak_format(cur_code);
           var left_right = get_left_right(peak_form);
           var correct_option = 0;
@@ -313,9 +317,9 @@ var main = function(ex) {
           }
           var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
           next_stage_wrapper(ins, correct_option);
-          break;
-        case 1:
           cur_stage++;
+          break;
+        case 2:
           var ins = "Is there short-circuit evaluation in ";
           ins = ins.concat(get_peak_str(cur_code).concat("?"));
           var peak_form = get_peak_format(cur_code);
@@ -333,13 +337,13 @@ var main = function(ex) {
           if (is_short_circuit) {
             next_stage_wrapper(ins, 0);
             //Skip the question about second argument
-            cur_stage = 3;
+            cur_stage = 4;
           }else {
             next_stage_wrapper(ins, 1);
+            cur_stage++;
           }
           break;
-        case 2:
-          cur_stage++;
+        case 3:
           var peak_form = get_peak_format(cur_code);
           console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
@@ -351,9 +355,9 @@ var main = function(ex) {
           }
           var ins = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
           next_stage_wrapper(ins, correct_option);
-          break;
-        case 3:
           cur_stage++;
+          break;
+        case 4:
           var peak_str = get_peak_str(cur_code);
           var peak_form = get_peak_format(cur_code);
           var left_right = get_left_right(peak_form);
@@ -367,8 +371,9 @@ var main = function(ex) {
           ins = "What does ";
           ins = ins.concat(peak_str).concat(" evaluate to?");
           next_stage_wrapper(ins, correct_option);
+          cur_stage++;
           break;
-        case 4:
+        case 5:
           //case where a new level of code starts
           var peak_form = get_peak_format(cur_code);
           var operator = get_op(peak_form);
@@ -380,7 +385,13 @@ var main = function(ex) {
           }else {
             cur_code_vals.splice(0, 1);
           }
+          //@TODO This is kind of an ad hoc way of detecting task finish
+          //  condition
+          var prev_code = cur_code;
           cur_code = eval(cur_code);
+          if (cur_code == prev_code) {
+            cur_code = eval(cur_code.substring(1, cur_code.length - 1));
+          }
           var code_val = format_code([cur_code]);
           code_level++;
           draw_code(code_val[0], code_level);
@@ -559,10 +570,11 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                var format = "(T and (T or F))";
+                var format = "((T and F) and T)";
                 generate_code(format);
                 draw_code(format_code([format])[0], 0);
-                draw_question("nextEval");
+                to_next_stage();
+                draw_submit_ans_button();
                 next.remove();
             });
   }
