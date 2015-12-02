@@ -2,15 +2,15 @@
     "meta": {
         "author": "Group2",
         "email": "placeholder@andrew.cmu.edu",
-        "title": "Sort the Shapes",
-        "description": "Sort the Shapes",
+        "title": "Short Ciruit Evaluation",
+        "description": "Short Circuit Evaluation",
         "id": "andrewid-sts",
         "language": "",
         "difficulty": "medium",
         "mainFile": "main.js",
         "instrFile": "instr.html",
         "constructorName": "main",
-        "menuDisplayName": "Sort the Shapes",
+        "menuDisplayName": "Short Circuit Evaluation",
         "requires": {
         }
     }

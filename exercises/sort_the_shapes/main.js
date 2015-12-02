@@ -67,7 +67,7 @@ var main = function(ex) {
 
     //Draw instruction
     var ins = "First make sure that you are familiar with the truth table. ";
-    ins = ins.concat("Yellow blocks are where short-circuit happens.");
+    ins = ins.concat("The highlighted blocks are where short-circuiting occurs.");
     var text = ex.createParagraph(margin, margin, ins, {
         size: "medium",
         width: ex.width()
@@ -442,9 +442,96 @@ var main = function(ex) {
   }
 
   //@TODO
-  //Generate feedback according to error user make
+  //Generate feedback according to error user makes
   function generate_feedback() {
-    return "TODO";
+    var feedback="Incorrect";
+    //because cur_stage was incremented 
+    current_stage=cur_stage-1;
+    switch ((current_stage)) {
+        case 0:
+          feedback= "Incorrect. Expressions are evaluated from left to right, and expressions inside paranthesis are evaluated first.";
+          break;
+        case 1:
+          var correct_option=0;
+          var peak_form = get_peak_format(cur_code);
+          var left_right = get_left_right(peak_form);
+          var correct_option = 0;
+          //If the first operand is not truthy
+          if (left_right[0] != "T") {
+            correct_option = 1;
+          }
+          if(correct_option==0){
+            feedback="Incorrect. ".concat(cur_code_vals[0].concat(" is truthy in Python."));
+          }
+          else{
+            feedback="Incorrect. ".concat(cur_code_vals[0].concat(" is falsey in Python."));
+          }
+          break;
+        case 2:
+          var ins = "Is there short-circuit evaluation in ";
+          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          var peak_form = get_peak_format(cur_code);
+          var op_index = find_op(peak_form);
+          var left = peak_form.substring(1, op_index - 1);
+          var right = find_next_exp(peak_form, op_index);
+          var is_short_circuit = false;
+          var operator = "or";
+          if (peak_form[op_index] == "a") {
+            operator = "and";
+          }
+          if (get_result(left, right, operator) == "L") {
+            is_short_circuit = true;
+          }
+          if (is_short_circuit) {
+            //be more specific
+            //the user answered that it does not short circuit
+            feedback="Incorrect. Since this falls in the case where the expression short circuits (look back at truth tables), the rest of the expression is not evaluated.";
+          }else {
+            //be more specific
+            //the user answered that it does short circuit
+            feedback="Incorrect. Since this falls in the case where the expression does not short circuit (look back at truth tables), the rest of the expression must be evaluated.";
+          }
+          break;
+        case 3:
+          var peak_form = get_peak_format(cur_code);
+          console.log("peak_form".concat(peak_form));
+          var left_right = get_left_right(peak_form);
+          console.log("get left right".concat(left_right[0]).concat(left_right[1]));
+          var correct_option = 0;
+          //If the second operand is not truthy
+          if (left_right[1] != "T") {
+            correct_option = 1;
+          }
+          if(correct_option==0){
+            //be more specific
+            feedback="Incorrect. ".concat(cur_code_vals[1].concat(" is truthy in Python."));
+          }
+          else{
+            //be more specific
+            feedback="Incorrect. ".concat(cur_code_vals[1].concat(" is falsey in Python."));
+          }
+          break;
+        case 4:
+          var peak_str = get_peak_str(cur_code);
+          var peak_form = get_peak_format(cur_code);
+          var left_right = get_left_right(peak_form);
+          var operator = get_op(peak_form);
+          var correct_option = 0;
+          //Case where the code evaluates to the value on the right
+          if (get_result(left_right[0], left_right[1], operator) == "R") {
+            correct_option = 1;
+          }
+          if(correct_option==0){
+            //be more specific
+            feedback="Incorrect. The expression short circuits and evaluates to the leftmost value";
+          }
+          else{
+            //be more specific
+            feedback="Incorrect. The expression does not short circuit and evaluates to the rightmost value.";
+          }
+          break;
+      }
+      return feedback;
   }
 
   function draw_code(code, line) {
