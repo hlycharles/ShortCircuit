@@ -389,7 +389,7 @@ var main = function(ex) {
           //  condition
           var prev_code = cur_code;
           cur_code = eval(cur_code);
-          if (cur_code == prev_code) {
+          if (cur_code.length == prev_code.length) {
             cur_code = eval(cur_code.substring(1, cur_code.length - 1));
           }
           var code_val = format_code([cur_code]);
