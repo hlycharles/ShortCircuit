@@ -17,6 +17,7 @@ var main = function(ex) {
   var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
 
   //Possible formats of questions
+
   var stage_two = ["((T and F) and T)", "((T or F) and T)",
                    "((F and T) or T)", "((F or T) and T)",
                    "((T and T) or F)", "((F or F) and T)"]
@@ -317,8 +318,8 @@ var main = function(ex) {
     correct_op_index = correct_op;
   }
 
-  //Proceed to the next stage of exercise
-  function to_next_stage() {
+  //Proceed to the next step of evaluation
+  function to_next_step() {
     if (question_type == 1) {
       switch ((cur_stage)) {
         case 0:
@@ -423,12 +424,20 @@ var main = function(ex) {
             break;
           }
           cur_stage = 0;
-          to_next_stage();
+          to_next_step();
           break;
         default:
           break;
       }
     }
+  }
+
+  //Go to the next stage of exercise
+  function to_next_stage() {
+    if (cur_stage == (stages.length - 1)) {
+      return;
+    }
+    
   }
 
   //Take in two operands and an operator, returns the result of the operation
@@ -454,7 +463,7 @@ var main = function(ex) {
     }
     if (correct_op_index == chosen_op_index) {
       ex.alert("Correct", {color: "green"});
-      to_next_stage();
+      to_next_step();
     }else {
       ex.showFeedback(generate_feedback());
     }
@@ -681,7 +690,7 @@ var main = function(ex) {
                 var format = get_format();
                 generate_code(format);
                 draw_code(format_code([format])[0], 0);
-                to_next_stage();
+                to_next_step();
                 //draw_submit_ans_button();
                 next.remove();
             });
