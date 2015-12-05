@@ -16,6 +16,13 @@ var main = function(ex) {
   var nor = ["not (A or B)","F", "F", "F", "T"]
   var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
 
+  //Possible formats of questions
+  var stage_two = ["((T and F) and T)", "((T or F) and T)",
+                   "((F and T) or T)", "((F or T) and T)",
+                   "((T and T) or F)", "((F or F) and T)"]
+  var stages = [stage_two];
+  var cur_stage = 1;
+
   //The current step that is evaluated
   var cur_code = "";
   //The current values that are substituted into general code format
@@ -147,6 +154,14 @@ var main = function(ex) {
       }
       margin+=50;
     }
+  }
+
+  //Get a random format from current stage
+  function get_format() {
+    var cur_stage_formats = stages[cur_stage];
+    var format_len = cur_stage_formats.length;
+    var format_index = Math.floor(Math.random() * format_len);
+    return cur_stage_formats[format_index];
   }
 
   //Generate a random expression that throws an exception
@@ -562,14 +577,6 @@ var main = function(ex) {
     });
   }
 
-  function draw_dropdown_w_op(defalt, options) {
-    var drop_y = 40;
-    drop_down = ex.createDropdown(s_margin + ex.width() / 2, drop_y, defalt, {
-      color: "light-blue",
-      elements: options
-    });
-  }
-
   function draw_btn_with_vals(vals) {
     //First remove the buttons from previous questions
     if (ans_button1 != undefined) {
@@ -671,7 +678,7 @@ var main = function(ex) {
                 for(var i=0; i<text_list.length; i++){
                   text_list[i].remove();
                 }
-                var format = "((T and F) and T)";
+                var format = get_format();
                 generate_code(format);
                 draw_code(format_code([format])[0], 0);
                 to_next_stage();
