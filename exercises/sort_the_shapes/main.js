@@ -29,6 +29,8 @@ var main = function(ex) {
   //UI elements
   var instruction = undefined;
   var drop_down = undefined;
+  var ans_button1 = undefined;
+  var ans_button2 = undefined;
   //button that submits user's answer
   var submit_ans_button = undefined;
 
@@ -46,6 +48,8 @@ var main = function(ex) {
   /* UI variables */
   //small margin
   var s_margin = 10;
+  //button width
+  var btn_width = 100;
 
   /* paragraph elements */
   var text_list=[];
@@ -400,7 +404,7 @@ var main = function(ex) {
             //Clear other UI elements
             drop_down.remove();
             drop_down = undefined;
-            submit_ans_button.remove();
+            //submit_ans_button.remove();
             break;
           }
           cur_stage = 0;
@@ -445,7 +449,7 @@ var main = function(ex) {
   //Generate feedback according to error user makes
   function generate_feedback() {
     var feedback="Incorrect";
-    //because cur_stage was incremented 
+    //because cur_stage was incremented
     current_stage=cur_stage-1;
     switch ((current_stage)) {
         case 0:
@@ -566,6 +570,31 @@ var main = function(ex) {
     });
   }
 
+  function draw_btn_with_vals(vals) {
+    //First remove the buttons from previous questions
+    if (ans_button1 != undefined) {
+      ans_button1.remove();
+      ans_button1 = undefined;
+    }
+    if (ans_button2 != undefined) {
+      ans_button2.remove();
+      ans_button2 = undefined;
+    }
+    //Draw new buttons
+    var btn_y = 40;
+    ans_button1 = ex.createButton(ex.width() / 2 + s_margin, btn_y, vals[0], {
+      width: btn_width.toString(),
+      color: "blue"
+    });
+    ans_button1.on("click", function(){chosen_op_index = 0; check_answer();});
+    ans_button2 = ex.createButton(ex.width() / 2 + btn_width * 2,
+                    btn_y, vals[1], {
+      width: btn_width.toString(),
+      color: "blue"
+    });
+    ans_button2.on("click", function(){chosen_op_index= 1; check_answer();});
+  }
+
   function draw_drop_down() {
     if (drop_down != undefined) {
       drop_down.remove();
@@ -581,31 +610,19 @@ var main = function(ex) {
           var second_eval = find_next_exp(cur_code, first_eval[1] + 2);
           var right = cur_code.substring(second_eval[0], second_eval[1] + 1);
           var left_right_val = format_code([left, right]);
-          var elems = {};
-          elems[left_right_val[0]] = function() {chosen_op_index = 0};
-          elems[left_right_val[1]] = function() {chosen_op_index = 1};
-          draw_dropdown_w_op(left_right_val[0], elems);
+          draw_btn_with_vals(left_right_val);
           chosen_op_index = 0;
           break;
         case 1:
-          var elems = {};
-          elems["Truthy"] = function(){chosen_op_index = 0};
-          elems["Falsey"] = function(){chosen_op_index = 1};
-          draw_dropdown_w_op("Falsey", elems);
+          draw_btn_with_vals(["Truthy", "Falsey"]);
           chosen_op_index = 1;
           break;
         case 2:
-          var elems = {};
-          elems["Yes"] = function(){chosen_op_index = 0};
-          elems["No"] = function(){chosen_op_index = 1};
-          draw_dropdown_w_op("No", elems);
+          draw_btn_with_vals(["Yes", "No"]);
           chosen_op_index = 1;
           break;
         case 3:
-          var elems = {};
-          elems["Truthy"] = function(){chosen_op_index = 0};
-          elems["Falsey"] = function(){chosen_op_index = 1};
-          draw_dropdown_w_op("Truthy", elems);
+          draw_btn_with_vals(["Truthy", "Falsey"]);
           chosen_op_index = 0;
           break;
         case 4:
@@ -615,10 +632,7 @@ var main = function(ex) {
           var right_indices = find_next_exp(peak_form, op_index);
           var right = peak_form.substring(right_indices[0], right_indices[1]+1);
           var vals = format_code([left, right]);
-          var elems = {};
-          elems[vals[0]] = function() {chosen_op_index = 0};
-          elems[vals[1]] = function() {chosen_op_index = 1};
-          draw_dropdown_w_op(vals[1], elems);
+          draw_btn_with_vals([vals]);
           chosen_op_index = 1;
           break;
         default:
@@ -661,7 +675,7 @@ var main = function(ex) {
                 generate_code(format);
                 draw_code(format_code([format])[0], 0);
                 to_next_stage();
-                draw_submit_ans_button();
+                //draw_submit_ans_button();
                 next.remove();
             });
   }
