@@ -33,6 +33,8 @@ var main = function(ex) {
   var cur_code_vals = [];
   //keep all code-wells drawn so that it will be easy to remove them
   var codes = [];
+  var code_hist = [];
+  var code_val_hist = [];
   //Current level of codes drawn
   var code_level = 0;
 
@@ -45,6 +47,10 @@ var main = function(ex) {
   var submit_ans_button = undefined;
   //next_stage button
   var next_stage_btn = undefined;
+  //header of question label
+  var question_hdr = undefined;
+  //Number of question currently taken
+  var question_num_label = undefined;
 
   /* keep track of current exercise state */
   //The index of correct drop down option
@@ -71,7 +77,15 @@ var main = function(ex) {
   mode = "quiz-immediate";
 
   //Flag for stable local testing
-  var not_on_server = 1;
+  var not_on_server = 0;
+
+  //specifically for save state
+  var in_truth_table = true;
+  var ins_str = "NEWSTR";
+  var btn_vals = [];
+
+  ex.data.content = {
+  };
 
   function draw_truth_tables(type){
     if(type=="or"){
@@ -168,6 +182,13 @@ var main = function(ex) {
     }
   }
 
+  function remove_truth_table() {
+    ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
+    for(var i=0; i<text_list.length; i++){
+      text_list[i].remove();
+    }
+  }
+
   //Get a random format from current stage
   function get_format() {
     var cur_step_formats = stages[cur_stage];
@@ -209,6 +230,8 @@ var main = function(ex) {
     }
     cur_code = format;
     cur_code_vals = result_arr;
+    code_hist.push(cur_code);
+    code_val_hist.push(cur_code_vals);
     correct_op_index = 0;
     return;
   }
@@ -325,7 +348,7 @@ var main = function(ex) {
 
   function next_step_wrapper(ins, correct_op) {
     draw_instruction (ins);
-    draw_drop_down();
+    draw_choice_btn();
     correct_op_index = correct_op;
   }
 
@@ -334,8 +357,8 @@ var main = function(ex) {
     if (question_type == 1) {
       switch ((cur_step)) {
         case 0:
-          var ins = "Which part of code is going to be evaluated?"
-          next_step_wrapper(ins, 0);
+          ins_str = "Which part of code is going to be evaluated?"
+          next_step_wrapper(ins_str, 0);
           cur_step++;
           break;
         case 1:
@@ -346,13 +369,13 @@ var main = function(ex) {
           if (left_right[0] != "T") {
             correct_option = 1;
           }
-          var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
-          next_step_wrapper(ins, correct_option);
+          ins_str = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
+          next_step_wrapper(ins_str, correct_option);
           cur_step++;
           break;
         case 2:
-          var ins = "Is there short-circuit evaluation in ";
-          ins = ins.concat(get_peak_str(cur_code).concat("?"));
+          ins_str = "Is there short-circuit evaluation in ";
+          ins_str = ins_str.concat(get_peak_str(cur_code).concat("?"));
           var peak_form = get_peak_format(cur_code);
           var op_index = find_op(peak_form);
           var left = peak_form.substring(1, op_index - 1);
@@ -366,11 +389,11 @@ var main = function(ex) {
             is_short_circuit = true;
           }
           if (is_short_circuit) {
-            next_step_wrapper(ins, 0);
+            next_step_wrapper(ins_str, 0);
             //Skip the question about second argument
             cur_step = 4;
           }else {
-            next_step_wrapper(ins, 1);
+            next_step_wrapper(ins_str, 1);
             cur_step++;
           }
           break;
@@ -384,8 +407,8 @@ var main = function(ex) {
           if (left_right[1] != "T") {
             correct_option = 1;
           }
-          var ins = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
-          next_step_wrapper(ins, correct_option);
+          ins_str = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
+          next_step_wrapper(ins_str, correct_option);
           cur_step++;
           break;
         case 4:
@@ -398,10 +421,9 @@ var main = function(ex) {
           if (get_result(left_right[0], left_right[1], operator) == "R") {
             correct_option = 1;
           }
-
-          ins = "What does ";
-          ins = ins.concat(peak_str).concat(" evaluate to?");
-          next_step_wrapper(ins, correct_option);
+          ins_str = "What does ";
+          ins_str = ins_str.concat(peak_str).concat(" evaluate to?");
+          next_step_wrapper(ins_str, correct_option);
           cur_step++;
           break;
         case 5:
@@ -423,6 +445,9 @@ var main = function(ex) {
           if (cur_code.length == prev_code.length) {
             cur_code = eval(cur_code.substring(1, cur_code.length - 1));
           }
+          code_hist.push(cur_code);
+          code_val_hist.push(cur_code_vals);
+          save_state();
           var code_val = format_code([cur_code]);
           code_level++;
           draw_code(code_val[0], code_level);
@@ -432,12 +457,15 @@ var main = function(ex) {
             remove_btn(ans_button2);
             //submit_ans_button.remove();
             if (cur_stage < stages.length - 1) {
-              draw_instruction("Click button below to go to next question");
+              ins_str = "Click button below to go to next question";
+              draw_instruction(ins_str);
               draw_next_btn();
+              break;
             }
-            var ins = "Congratulations, you have completed this exercise. \n";
-            ins = ins.concat("Click \"submit\" to submit your score");
-            draw_instruction(ins);
+            ins_str = "Congratulations, you have completed this exercise. \n";
+            ins_str = ins_str.concat("Click \"submit\" to submit your score");
+            draw_instruction(ins_str);
+            ex.chromeElements.submitButton.enable();
             break;
           }
           cur_step = 0;
@@ -446,6 +474,7 @@ var main = function(ex) {
         default:
           break;
       }
+      save_state();
     }
   }
 
@@ -463,6 +492,14 @@ var main = function(ex) {
     generate_code(format);
     draw_code(format_code([format])[0], 0);
     to_next_step();
+    question_num_label.remove();
+    //Reconstruct question number label
+    question_num_str = (cur_stage + 1).toString();
+    question_num_str = question_num_str.concat(" / ");
+    question_num_str = question_num_str.concat(stages.length.toString());
+    question_num_label = ex.createParagraph(s_margin, 30, question_num_str, {
+      size: "medium"
+    });
   }
 
   //Go to the next stage of exercise
@@ -482,6 +519,8 @@ var main = function(ex) {
     cur_step = 0;
     cur_code = "";
     codes = [];
+    code_hist = [];
+    code_val_hist = [];
     cur_stage++;
     //Initialize the question
     init_question();
@@ -517,6 +556,7 @@ var main = function(ex) {
       }
       ex.showFeedback(generate_feedback());
     }
+    save_state();
   }
 
   //@TODO
@@ -617,7 +657,8 @@ var main = function(ex) {
     var line_space = 5;
     var width = 240;
     var x = ex.width() / 4 - width / 2;
-    var code_well = ex.createCode(x, (line_height + line_space) * line +
+    var offset = 20;
+    var code_well = ex.createCode(x+offset, (line_height + line_space) * line +
       line_space, code, {
       width: width.toString().concat("px"),
       language: "python"
@@ -677,7 +718,7 @@ var main = function(ex) {
     ans_button2.on("click", function(){chosen_op_index= 1; check_answer();});
   }
 
-  function draw_drop_down() {
+  function draw_choice_btn() {
     if (drop_down != undefined) {
       drop_down.remove();
     }
@@ -750,9 +791,22 @@ var main = function(ex) {
   function draw_question(type) {
     if (type == "nextEval") {
       draw_instruction("Which expression is evaluated next?");
-      draw_drop_down();
+      draw_choice_btn();
       draw_submit_ans_button();
     }
+  }
+
+  //Draw the label of current question
+  function draw_question_num() {
+    question_hdr = ex.createParagraph(s_margin, 0, "Question", {
+      size: "medium"
+    });
+    question_num_str = (cur_stage + 1).toString();
+    question_num_str = question_num_str.concat(" / ");
+    question_num_str = question_num_str.concat(stages.length.toString());
+    question_num_label = ex.createParagraph(s_margin, 30, question_num_str, {
+      size: "medium"
+    });
   }
 
   //Submit final result
@@ -773,19 +827,26 @@ var main = function(ex) {
       ex.data.content.score = 1.0;
     }
     ex.chromeElements.submitButton.on("click", function(){submit_task();})
+    ex.chromeElements.undoButton.disable();
+    ex.chromeElements.redoButton.disable();
+    ex.chromeElements.resetButton.disable();
+    ex.chromeElements.submitButton.disable();
     next = ex.createButton(ex.width()-50,ex.height()-50,"next",
             {size:"small",color:"blue"}).on("click", function(){
-                ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
-                for(var i=0; i<text_list.length; i++){
-                  text_list[i].remove();
-                }
+                remove_truth_table();
+                draw_question_num();
                 var format = get_format();
                 generate_code(format);
                 draw_code(format_code([format])[0], 0);
                 to_next_step();
                 //draw_submit_ans_button();
+                in_truth_table = false;
+                save_state();
                 next.remove();
             });
+    if (!not_on_server && ex.data.instance.state.score != undefined) {
+      recover_state();
+    }
   }
 
   // is_balanced (for debugging and correctness of code)
@@ -934,6 +995,61 @@ var main = function(ex) {
       result = prefix + partial_result + suffix;
       return result; // Replace double space with single space
     }
+  }
+
+  //Recover from saved state
+  function recover_state() {
+    if (ex.data.instance.state.score == undefined) {
+      return;
+    }
+    var stored_state = ex.data.instance.state;
+    cur_stage = stored_state.cur_stage;
+    cur_step = stored_state.cur_step;
+    cur_code = stored_state.cur_code;
+    code_level = stored_state.code_level;
+    cur_code_vals = stored_state.cur_code_vals;
+    code_hist = stored_state.code_hist;
+    code_val_hist = stored_state.code_val_hist;
+    correct_op_index = stored_state.correct_op_index;
+    ex.data.content.score = stored_state.score;
+    in_truth_table = stored_state.in_truth_table;
+    ins_str = stored_state.instruction;
+    if (!in_truth_table) {
+      remove_truth_table();
+      next.remove();
+    }
+    draw_choice_btn();
+    draw_instruction(ins_str);
+    draw_question_num();
+    for (var i = 0; i <= code_level; i++) {
+      var temp = cur_code_vals;
+      cur_code_vals = code_val_hist[i];
+      var code_w_val = format_code([code_hist[i]]);
+      cur_code_vals = temp;
+      draw_code(code_w_val[0], i);
+    }
+    if (is_finished(cur_code)) {
+      remove_btn();
+      draw_next_btn();
+    }
+  }
+
+  //Save current state
+  function save_state() {
+    var cur_state = {
+      "cur_stage": cur_stage,
+      "cur_step": cur_step,
+      "cur_code": cur_code,
+      "code_hist": code_hist,
+      "code_val_hist": code_val_hist,
+      "code_level": code_level,
+      "cur_code_vals": cur_code_vals,
+      "score": ex.data.content.score,
+      "after_truth_table": in_truth_table,
+      "correct_op_index": correct_op_index,
+      "instruction": ins_str
+    };
+    ex.saveState(cur_state);
   }
 
   initialize();
