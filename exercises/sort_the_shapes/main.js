@@ -1035,7 +1035,8 @@ var main = function(ex) {
       draw_code(code_w_val[0], i);
     }
     if (is_finished(cur_code)) {
-      remove_btn();
+      remove_btn(ans_button1);
+      remove_btn(ans_button2);
       draw_next_btn();
     }
   }
