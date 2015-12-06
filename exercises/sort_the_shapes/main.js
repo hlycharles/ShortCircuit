@@ -66,6 +66,13 @@ var main = function(ex) {
   /* paragraph elements */
   var text_list=[];
 
+  //Get and set mode
+  var mode = ex.data.meta.mode;
+  mode = "quiz-immediate";
+
+  //Flag for stable local testing
+  var not_on_server = 1;
+
   function draw_truth_tables(type){
     if(type=="or"){
       var x=(ex.width()/2) - 200;
@@ -428,7 +435,9 @@ var main = function(ex) {
               draw_instruction("Click button below to go to next question");
               draw_next_btn();
             }
-            draw_instruction("Congratulations, you have completed this exercise");
+            var ins = "Congratulations, you have completed this exercise. \n";
+            ins = ins.concat("Click \"submit\" to submit your score");
+            draw_instruction(ins);
             break;
           }
           cur_step = 0;
@@ -464,6 +473,7 @@ var main = function(ex) {
     remove_btn(ans_button1);
     remove_btn(ans_button2);
     next_stage_btn.remove();
+    ex.graphics.ctx.clearRect(0, 0, ex.width(), ex.height());
     for (var i = 0; i < codes.length; i++) {
       codes[i].remove();
     }
@@ -502,6 +512,9 @@ var main = function(ex) {
       ex.alert("Correct", {color: "green"});
       to_next_step();
     }else {
+      if (!not_on_server && ex.data.content.score != undefined) {
+        ex.data.content.score -= 0.2;
+      }
       ex.showFeedback(generate_feedback());
     }
   }
@@ -609,6 +622,21 @@ var main = function(ex) {
       width: width.toString().concat("px"),
       language: "python"
     });
+    //Draw arrow if code level is greater than 0
+    if (line > 0) {
+      var ctx = ex.graphics.ctx;
+      ctx.strokeStyle = "black";
+      var arrow_span = 5;
+      ctx.beginPath();
+      var bottom_y=(line_height + line_space) * line + line_space - s_margin;
+      ctx.moveTo(ex.width () / 4, bottom_y);
+      ctx.lineTo(ex.width() / 4, bottom_y + s_margin - line_height / 2);
+      ctx.moveTo(ex.width () / 4, bottom_y);
+      ctx.lineTo(ex.width() / 4 - arrow_span, bottom_y - arrow_span);
+      ctx.moveTo(ex.width () / 4, bottom_y);
+      ctx.lineTo(ex.width() / 4 + arrow_span, bottom_y - arrow_span);
+      ctx.stroke();
+    }
     codes.push(code_well);
   }
 
@@ -619,7 +647,8 @@ var main = function(ex) {
     var x = ex.width() / 2 + s_margin;
     instruction = ex.createParagraph(x, s_margin, text, {
       textAlign: "left",
-      size: "large"
+      size: "large",
+      width: ex.width() / 2 - s_margin
     });
   }
 
@@ -726,10 +755,24 @@ var main = function(ex) {
     }
   }
 
+  //Submit final result
+  function submit_task() {
+    if (ex.data.content.score != undefined){
+      var feedBack = "Score: ";
+      feedBack = feedBack.concat(ex.data.content.score.toString());
+      feedBack = feedBack.concat(" / 1.0");
+      ex.setGrade(ex.data.content.score, feedBack);
+    }
+  }
+
   //@Should be changed so that the initial question is about truth table
   function initialize() {
     draw_truth_tables("or", (ex.width()/2) - 200, (ex.height()/2) - 150);
     draw_truth_tables("and", (ex.width()/2)+50, (ex.height()/2)-150);
+    if (!not_on_server) {
+      ex.data.content.score = 1.0;
+    }
+    ex.chromeElements.submitButton.on("click", function(){submit_task();})
     next = ex.createButton(ex.width()-50,ex.height()-50,"next",
             {size:"small",color:"blue"}).on("click", function(){
                 ex.graphics.ctx.clearRect(0,0,ex.width(),ex.height());
