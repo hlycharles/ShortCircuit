@@ -1019,9 +1019,13 @@ var main = function(ex) {
       next.remove();
     }
     //Compensate for offset in save state
-    cur_step--;
-    if (cur_step < 0) {
-      cur_step = 4;
+    if (!is_finished(cur_code)) {
+      cur_step--;
+      if (cur_step < 0) {
+        cur_step = 4;
+      }
+    }else {
+      draw_next_btn();
     }
     draw_choice_btn();
     cur_step++;
@@ -1033,11 +1037,6 @@ var main = function(ex) {
       var code_w_val = format_code([code_hist[i]]);
       cur_code_vals = temp;
       draw_code(code_w_val[0], i);
-    }
-    if (is_finished(cur_code)) {
-      remove_btn(ans_button1);
-      remove_btn(ans_button2);
-      draw_next_btn();
     }
   }
 
