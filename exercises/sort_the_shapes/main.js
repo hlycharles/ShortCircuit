@@ -1018,7 +1018,13 @@ var main = function(ex) {
       remove_truth_table();
       next.remove();
     }
+    //Compensate for offset in save state
+    cur_step--;
+    if (cur_step < 0) {
+      cur_step = 4;
+    }
     draw_choice_btn();
+    cur_step++;
     draw_instruction(ins_str);
     draw_question_num();
     for (var i = 0; i <= code_level; i++) {
