@@ -17,12 +17,14 @@ var main = function(ex) {
   var nor_equiv=["(not A) and (not B)", "F", "F", "F", "T"]
 
   //Possible formats of questions
-
+  var stage_one = ["(T and F)", "(T or F)", "(F and T)", "(F or T)"];
   var stage_two = ["((T and F) and T)", "((T or F) and T)",
                    "((F and T) or T)", "((F or T) and T)",
                    "((T and T) or F)", "((F or F) and T)"]
-  var stages = [stage_two];
-  var cur_stage = 1;
+  var stage_three = ["(((T and F) or T) and T)", "(((F or T) or T) and F)",
+                     "(((T or F) and T) or F)", "(((F and T) or T) and F)"];
+  var stages = [stage_one, stage_two, stage_three];
+  var cur_stage = 0;
 
   //The current step that is evaluated
   var cur_code = "";
@@ -41,6 +43,8 @@ var main = function(ex) {
   var ans_button2 = undefined;
   //button that submits user's answer
   var submit_ans_button = undefined;
+  //next_stage button
+  var next_stage_btn = undefined;
 
   /* keep track of current exercise state */
   //The index of correct drop down option
@@ -48,7 +52,7 @@ var main = function(ex) {
   //The index of drop down option that user chooses
   var chosen_op_index = 0;
   //Current stage / step of evaluation
-  var cur_stage = 0;
+  var cur_step = 0;
   //Total number of steps / stages
   var total_stage = 0;
   var question_type = 1;
@@ -159,10 +163,10 @@ var main = function(ex) {
 
   //Get a random format from current stage
   function get_format() {
-    var cur_stage_formats = stages[cur_stage];
-    var format_len = cur_stage_formats.length;
+    var cur_step_formats = stages[cur_stage];
+    var format_len = cur_step_formats.length;
     var format_index = Math.floor(Math.random() * format_len);
-    return cur_stage_formats[format_index];
+    return cur_step_formats[format_index];
   }
 
   //Generate a random expression that throws an exception
@@ -312,7 +316,7 @@ var main = function(ex) {
     return undefined;
   }
 
-  function next_stage_wrapper(ins, correct_op) {
+  function next_step_wrapper(ins, correct_op) {
     draw_instruction (ins);
     draw_drop_down();
     correct_op_index = correct_op;
@@ -321,11 +325,11 @@ var main = function(ex) {
   //Proceed to the next step of evaluation
   function to_next_step() {
     if (question_type == 1) {
-      switch ((cur_stage)) {
+      switch ((cur_step)) {
         case 0:
           var ins = "Which part of code is going to be evaluated?"
-          next_stage_wrapper(ins, 0);
-          cur_stage++;
+          next_step_wrapper(ins, 0);
+          cur_step++;
           break;
         case 1:
           var peak_form = get_peak_format(cur_code);
@@ -336,8 +340,8 @@ var main = function(ex) {
             correct_option = 1;
           }
           var ins = "Is ".concat(cur_code_vals[0].concat(" truthy or falsey?"));
-          next_stage_wrapper(ins, correct_option);
-          cur_stage++;
+          next_step_wrapper(ins, correct_option);
+          cur_step++;
           break;
         case 2:
           var ins = "Is there short-circuit evaluation in ";
@@ -355,12 +359,12 @@ var main = function(ex) {
             is_short_circuit = true;
           }
           if (is_short_circuit) {
-            next_stage_wrapper(ins, 0);
+            next_step_wrapper(ins, 0);
             //Skip the question about second argument
-            cur_stage = 4;
+            cur_step = 4;
           }else {
-            next_stage_wrapper(ins, 1);
-            cur_stage++;
+            next_step_wrapper(ins, 1);
+            cur_step++;
           }
           break;
         case 3:
@@ -374,8 +378,8 @@ var main = function(ex) {
             correct_option = 1;
           }
           var ins = "Is ".concat(cur_code_vals[1].concat(" truthy or falsey?"));
-          next_stage_wrapper(ins, correct_option);
-          cur_stage++;
+          next_step_wrapper(ins, correct_option);
+          cur_step++;
           break;
         case 4:
           var peak_str = get_peak_str(cur_code);
@@ -390,8 +394,8 @@ var main = function(ex) {
 
           ins = "What does ";
           ins = ins.concat(peak_str).concat(" evaluate to?");
-          next_stage_wrapper(ins, correct_option);
-          cur_stage++;
+          next_step_wrapper(ins, correct_option);
+          cur_step++;
           break;
         case 5:
           //case where a new level of code starts
@@ -416,14 +420,18 @@ var main = function(ex) {
           code_level++;
           draw_code(code_val[0], code_level);
           if (is_finished(cur_code)) {
-            draw_instruction("Congratulations, you have completed this exercise");
             //Clear other UI elements
-            drop_down.remove();
-            drop_down = undefined;
+            remove_btn(ans_button1);
+            remove_btn(ans_button2);
             //submit_ans_button.remove();
+            if (cur_stage < stages.length - 1) {
+              draw_instruction("Click button below to go to next question");
+              draw_next_btn();
+            }
+            draw_instruction("Congratulations, you have completed this exercise");
             break;
           }
-          cur_stage = 0;
+          cur_step = 0;
           to_next_step();
           break;
         default:
@@ -432,12 +440,41 @@ var main = function(ex) {
     }
   }
 
+  //Remove button from screen if present
+  function remove_btn(btn) {
+    if (btn != undefined) {
+      btn.remove();
+      btn = undefined;
+    }
+  }
+
+  //initialize a question
+  function init_question() {
+    var format = get_format();
+    generate_code(format);
+    draw_code(format_code([format])[0], 0);
+    to_next_step();
+  }
+
   //Go to the next stage of exercise
   function to_next_stage() {
-    if (cur_stage == (stages.length - 1)) {
+    if (cur_step == (stages.length - 1)) {
       return;
     }
-    
+    remove_btn(ans_button1);
+    remove_btn(ans_button2);
+    next_stage_btn.remove();
+    for (var i = 0; i < codes.length; i++) {
+      codes[i].remove();
+    }
+    cur_code_vals = [];
+    code_level = 0;
+    cur_step = 0;
+    cur_code = "";
+    codes = [];
+    cur_stage++;
+    //Initialize the question
+    init_question();
   }
 
   //Take in two operands and an operator, returns the result of the operation
@@ -473,8 +510,8 @@ var main = function(ex) {
   //Generate feedback according to error user makes
   function generate_feedback() {
     var feedback="Incorrect";
-    //because cur_stage was incremented
-    current_stage=cur_stage-1;
+    //because cur_step was incremented
+    current_stage=cur_step-1;
     switch ((current_stage)) {
         case 0:
           feedback= "Incorrect. Expressions are evaluated from left to right, and expressions inside paranthesis are evaluated first.";
@@ -565,7 +602,7 @@ var main = function(ex) {
   function draw_code(code, line) {
     var line_height = 80;
     var line_space = 5;
-    var width = 200;
+    var width = 240;
     var x = ex.width() / 4 - width / 2;
     var code_well = ex.createCode(x, (line_height + line_space) * line +
       line_space, code, {
@@ -597,7 +634,7 @@ var main = function(ex) {
       ans_button2 = undefined;
     }
     //Draw new buttons
-    var btn_y = 40;
+    var btn_y = 80;
     ans_button1 = ex.createButton(ex.width() / 2 + s_margin, btn_y, vals[0], {
       width: btn_width.toString(),
       color: "blue"
@@ -617,7 +654,7 @@ var main = function(ex) {
     }
     var drop_y = 40;
     if (question_type == 1) {
-      switch (cur_stage) {
+      switch (cur_step) {
         case 0:
           //Get around using variables
           var first_eval = find_peak(cur_code);
@@ -648,7 +685,7 @@ var main = function(ex) {
           var right_indices = find_next_exp(peak_form, op_index);
           var right = peak_form.substring(right_indices[0], right_indices[1]+1);
           var vals = format_code([left, right]);
-          draw_btn_with_vals([vals]);
+          draw_btn_with_vals(vals);
           chosen_op_index = 1;
           break;
         default:
@@ -666,6 +703,18 @@ var main = function(ex) {
       size: "medium"
     });
     submit_ans_button.on("click", function(){check_answer();});
+  }
+
+  //Draw the next button that allows users go the next question
+  function draw_next_btn() {
+    var btn_y = 80;
+    var btn_width = 150;
+    next_stage_btn = ex.createButton(ex.width() / 2 + s_margin, btn_y,
+                     "Go to next question", {
+      width: btn_width.toString(),
+      color: "blue"
+    });
+    next_stage_btn.on("click", function(){to_next_stage()});
   }
 
   //Draw question, which includes instruction, drop down and submit button
