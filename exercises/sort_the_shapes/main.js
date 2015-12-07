@@ -141,13 +141,13 @@ var main = function(ex) {
         if(j==0){
           curCol=a_options;
           //highlight
-          if((i==2 || i==3) && (type=="or")){
+          if((i==2 || i==3) && (type=="and")){
             ex.graphics.ctx.globalAlpha=0.4;
             ex.graphics.ctx.fillStyle="yellow";
             ex.graphics.ctx.fillRect(x+100, y+margin, 50, 50);
             ex.graphics.ctx.globalAlpha=1;
           }
-          if((i==0 || i==1) && (type=="and")){
+          if((i==0 || i==1) && (type=="or")){
             ex.graphics.ctx.globalAlpha=0.4;
             ex.graphics.ctx.fillStyle="yellow";
             ex.graphics.ctx.fillRect(x+100, y+margin, 50, 50);
