@@ -77,7 +77,7 @@ var main = function(ex) {
   mode = "quiz-immediate";
 
   //Flag for stable local testing
-  var not_on_server = 0;
+  var not_on_server = 1;
 
   //specifically for save state
   var in_truth_table = true;
@@ -581,7 +581,7 @@ var main = function(ex) {
             correct_option = 1;
           }
           if(correct_option==0){
-            //checks if integer 
+            //checks if integer
             if(!isNaN(cur_code_vals[0])){
               var text=" Integers other than 0 are truthy in Python.";
             }else{
@@ -1081,7 +1081,9 @@ var main = function(ex) {
       "instruction": ins_str,
       "task_finished": task_finished
     };
-    ex.saveState(cur_state);
+    if (!not_on_server) {
+      ex.saveState(cur_state);
+    }
   }
 
   initialize();
