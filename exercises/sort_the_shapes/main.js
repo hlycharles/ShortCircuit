@@ -77,7 +77,7 @@ var main = function(ex) {
   mode = "quiz-immediate";
 
   //Flag for stable local testing
-  var not_on_server = 1;
+  var not_on_server = 0;
 
   //specifically for save state
   var in_truth_table = true;
@@ -232,7 +232,7 @@ var main = function(ex) {
     cur_code = format;
     cur_code_vals = result_arr;
     code_hist.push(cur_code);
-    code_val_hist.push(cur_code_vals);
+    code_val_hist.push(cur_code_vals.slice());
     correct_op_index = 0;
     return;
   }
@@ -447,8 +447,8 @@ var main = function(ex) {
             cur_code = eval(cur_code.substring(1, cur_code.length - 1));
           }
           code_hist.push(cur_code);
-          code_val_hist.push(cur_code_vals);
-          save_state();
+          code_val_hist.push(cur_code_vals.slice());
+          //save_state();
           var code_val = format_code([cur_code]);
           code_level++;
           draw_code(code_val[0], code_level);
@@ -1060,6 +1060,7 @@ var main = function(ex) {
       var temp = cur_code_vals;
       cur_code_vals = code_val_hist[i];
       var code_w_val = format_code([code_hist[i]]);
+      //restore cur_code_vals
       cur_code_vals = temp;
       draw_code(code_w_val[0], i);
     }
