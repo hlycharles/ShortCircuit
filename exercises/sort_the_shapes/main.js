@@ -581,10 +581,22 @@ var main = function(ex) {
             correct_option = 1;
           }
           if(correct_option==0){
-            feedback="Incorrect. ".concat(cur_code_vals[0].concat(" is truthy in Python."));
+            //checks if integer 
+            if(!isNaN(cur_code_vals[0])){
+              var text=" Integers other than 0 are truthy in Python.";
+            }else{
+              var text=cur_code_vals[0].concat(" is truthy in Python.")
+            }
+            feedback="Incorrect. ".concat(text);
           }
           else{
-            feedback="Incorrect. ".concat(cur_code_vals[0].concat(" is falsey in Python."));
+            if(isNaN(cur_code_vals[1])){
+              var text=" None and empty structures are falsey in Python.";
+            }
+            else{
+              var text= cur_code_vals[1].concat(" is falsey in Python.");
+            }
+            feedback="Incorrect. ".concat(text);
           }
           break;
         case 2:
@@ -618,17 +630,26 @@ var main = function(ex) {
           var left_right = get_left_right(peak_form);
           console.log("get left right".concat(left_right[0]).concat(left_right[1]));
           var correct_option = 0;
-          //If the second operand is not truthy
+          //If the second operand is falsey
           if (left_right[1] != "T") {
             correct_option = 1;
           }
           if(correct_option==0){
-            //be more specific
-            feedback="Incorrect. ".concat(cur_code_vals[1].concat(" is truthy in Python."));
+            if(!isNaN(cur_code_vals[0])){
+              var text=" Integers other than 0 are truthy in Python.";
+            }else{
+              var text=cur_code_vals[0].concat(" is truthy in Python.")
+            }
+            feedback="Incorrect. ".concat(text);
           }
           else{
-            //be more specific
-            feedback="Incorrect. ".concat(cur_code_vals[1].concat(" is falsey in Python."));
+            if(isNaN(cur_code_vals[1])){
+              var text=" None and empty structures are falsey in Python.";
+            }
+            else{
+              var text= cur_code_vals[1].concat(" is falsey in Python.");
+            }
+            feedback="Incorrect. ".concat(text);
           }
           break;
         case 4:
