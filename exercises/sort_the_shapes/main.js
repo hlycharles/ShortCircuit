@@ -467,6 +467,7 @@ var main = function(ex) {
             ins_str = ins_str.concat("Click \"submit\" to submit your score");
             draw_instruction(ins_str);
             ex.chromeElements.submitButton.enable();
+            task_finished = true;
             break;
           }
           cur_step = 0;
@@ -1015,6 +1016,7 @@ var main = function(ex) {
     ex.data.content.score = stored_state.score;
     in_truth_table = stored_state.in_truth_table;
     ins_str = stored_state.instruction;
+    task_finished = stored_state.task_finished;
     if (!in_truth_table) {
       remove_truth_table();
       next.remove();
@@ -1054,7 +1056,8 @@ var main = function(ex) {
       "score": ex.data.content.score,
       "after_truth_table": in_truth_table,
       "correct_op_index": correct_op_index,
-      "instruction": ins_str
+      "instruction": ins_str,
+      "task_finished": task_finished
     };
     ex.saveState(cur_state);
   }
