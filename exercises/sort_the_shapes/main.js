@@ -847,10 +847,9 @@ var main = function(ex) {
                 save_state();
                 next.remove();
             });
-    /*
     if (!not_on_server && ex.data.instance.state.score != undefined) {
       recover_state();
-    } */
+    }
   }
 
   // is_balanced (for debugging and correctness of code)
