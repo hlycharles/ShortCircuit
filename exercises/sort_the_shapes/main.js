@@ -84,6 +84,7 @@ var main = function(ex) {
   var ins_str = "NEWSTR";
   var btn_vals = [];
   var task_finished = false;
+  var submitted = false;
 
   ex.data.content = {
   };
@@ -840,6 +841,8 @@ var main = function(ex) {
       feedBack = feedBack.concat(" / 1.0");
       ex.setGrade(ex.data.content.score, feedBack);
     }
+    submitted = true;
+    save_state();
   }
 
   //@Should be changed so that the initial question is about truth table
@@ -1039,6 +1042,7 @@ var main = function(ex) {
     in_truth_table = stored_state.in_truth_table;
     ins_str = stored_state.instruction;
     task_finished = stored_state.task_finished;
+    submitted = stored_state.submitted
     if (!in_truth_table) {
       remove_truth_table();
       next.remove();
@@ -1051,6 +1055,8 @@ var main = function(ex) {
       }
     }else if (!task_finished){
       draw_next_btn();
+    }else if (!submitted) {
+      ex.chromeElements.submitButton.enable();
     }
     draw_choice_btn();
     cur_step++;
@@ -1080,7 +1086,8 @@ var main = function(ex) {
       "after_truth_table": in_truth_table,
       "correct_op_index": correct_op_index,
       "instruction": ins_str,
-      "task_finished": task_finished
+      "task_finished": task_finished,
+      "submitted": submitted
     };
     if (!not_on_server) {
       ex.saveState(cur_state);
