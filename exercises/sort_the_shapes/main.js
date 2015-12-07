@@ -106,12 +106,12 @@ var main = function(ex) {
     //Draw instruction
     var ins = "First make sure that you are familiar with the truth table. ";
     ins = ins.concat("The highlighted blocks are where short-circuiting occurs.");
-    var text = ex.createParagraph(margin, margin, ins, {
+    var text = ex.createParagraph(margin-20, margin, ins, {
         size: "medium",
         width: ex.width()
       });
     text_list.push(text);
-    var text2 = ex.createParagraph(margin, margin * 2,
+    var text2 = ex.createParagraph(margin, margin * 7,
       "Click 'next' to continue", {
         size: "medium"
       });
@@ -836,6 +836,7 @@ var main = function(ex) {
     next = ex.createButton(ex.width()-50,ex.height()-50,"next",
             {size:"small",color:"blue"}).on("click", function(){
                 remove_truth_table();
+                next.remove();
                 draw_question_num();
                 var format = get_format();
                 generate_code(format);
