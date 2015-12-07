@@ -83,6 +83,7 @@ var main = function(ex) {
   var in_truth_table = true;
   var ins_str = "NEWSTR";
   var btn_vals = [];
+  var task_finished = false;
 
   ex.data.content = {
   };
