@@ -524,7 +524,7 @@ var main = function(ex) {
     question_num_str = (cur_stage + 1).toString();
     question_num_str = question_num_str.concat(" / ");
     question_num_str = question_num_str.concat(stages.length.toString());
-    question_num_label = ex.createParagraph(s_margin, text_height,
+    question_num_label = ex.createParagraph(s_margin, text_height + s_margin,
       question_num_str, {
       size: "medium"
     });
@@ -851,14 +851,14 @@ var main = function(ex) {
   function draw_question_num() {
     var text_height = 20;
     var text_width = 100;
-    question_hdr = ex.createParagraph(s_margin, 0, "Question", {
+    question_hdr = ex.createParagraph(s_margin, s_margin, "Question", {
       size: "medium",
       height: text_height
     });
     question_num_str = (cur_stage + 1).toString();
     question_num_str = question_num_str.concat(" / ");
     question_num_str = question_num_str.concat(stages.length.toString());
-    question_num_label = ex.createParagraph(s_margin, text_height,
+    question_num_label = ex.createParagraph(s_margin, text_height + s_margin,
       question_num_str, {
       size: "medium"
     });
