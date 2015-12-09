@@ -68,6 +68,8 @@ var main = function(ex) {
   var s_margin = 10;
   //button width
   var btn_width = 100;
+  //offset for question number header
+  var question_hdr_offset = 0;
 
   /* paragraph elements */
   var text_list=[];
@@ -105,18 +107,23 @@ var main = function(ex) {
     var margin= 50;
 
     //Draw instruction
-    var ins = "First make sure that you are familiar with the truth table. ";
+    var ins = "Before taking the exercise, "
+    ins = ins.concat("make sure that you are familiar with the truth table. ");
     ins = ins.concat("The highlighted blocks are where short-circuiting occurs.");
-    var text = ex.createParagraph(margin-20, margin, ins, {
+    ins = ins.concat(" Click \"next\" to continue");
+    ex.alert(ins, {stay: true});
+    /*
+    var text = ex.createParagraph(s_margin, s_margin, ins, {
         size: "medium",
         width: ex.width()
       });
     text_list.push(text);
-    var text2 = ex.createParagraph(margin, margin * 7,
+    var text2 = ex.createParagraph(s_margin, ex.height() - margin,
       "Click 'next' to continue", {
         size: "medium"
       });
     text_list.push(text2);
+    */
 
     //draw vertical lines
     for(var i=0; i<2; i++){
@@ -201,7 +208,9 @@ var main = function(ex) {
 
   //Generate a random expression that throws an exception
   function generate_exn() {
-    return "(1/0)";
+    var possible_exn = ["(1/0)", "(2/0)", "(3/0)", "(8/0)"];
+    var index = Math.floor(Math.random() * possible_exn.length);
+    return possible_exn[index];
   }
 
   //Generate code according to given format. "F" stands for falsey value, "T"
@@ -213,19 +222,36 @@ var main = function(ex) {
   function generate_code(format) {
     var result = "";
     var result_arr = [];
+    var already_used = [];
     for (var i = 0; i < format.length; i++) {
       if (format[i] == "F") {
         var value_index = Math.floor(Math.random() * (falsey_value.length));
-        result += falsey_value[value_index];
-        result_arr.push(falsey_value[value_index]);
+        var temp_choice = falsey_value[value_index];
+        while (already_used.indexOf(temp_choice) != -1) {
+          value_index = Math.floor(Math.random() * (falsey_value.length));
+          temp_choice = falsey_value[value_index];
+        }
+        result += temp_choice;
+        result_arr.push(temp_choice);
+        already_used.push(temp_choice);
       }else if (format[i] == "T") {
         var int_value = Math.round(Math.random() * 10) + 1;
-        result += int_value.toString();
-        result_arr.push(int_value.toString());
+        var temp_choice = int_value.toString();
+        while (already_used.indexOf(temp_choice) != -1) {
+          int_value = Math.round(Math.random() * 10) + 1;
+          temp_choice = int_value.toString();
+        }
+        result += temp_choice;
+        result_arr.push(temp_choice);
+        already_used.push(temp_choice);
       }else if (format[i] == "E") {
         var exn_exp = generate_exn();
+        while (already_used.indexOf(exn_exp) != -1) {
+          exn_exp = generate_exn();
+        }
         result += exn_exp;
         result_arr.push(exn_exp);
+        already_used.push(exn_exp);
       }else {
         result += format[i];
       }
@@ -396,14 +422,12 @@ var main = function(ex) {
             cur_step = 4;
           }else {
             next_step_wrapper(ins_str, 1);
-            cur_step++;
+            cur_step += 2;
           }
           break;
         case 3:
           var peak_form = get_peak_format(cur_code);
-          console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
-          console.log("get left right".concat(left_right[0]).concat(left_right[1]));
           var correct_option = 0;
           //If the second operand is not truthy
           if (left_right[1] != "T") {
@@ -465,9 +489,8 @@ var main = function(ex) {
               break;
             }
             ins_str = "Congratulations, you have completed this exercise. \n";
-            ins_str = ins_str.concat("Click \"submit\" to submit your score");
             draw_instruction(ins_str);
-            ex.chromeElements.submitButton.enable();
+            submit_task();
             task_finished = true;
             break;
           }
@@ -496,11 +519,13 @@ var main = function(ex) {
     draw_code(format_code([format])[0], 0);
     to_next_step();
     question_num_label.remove();
+    var text_height = 20;
     //Reconstruct question number label
     question_num_str = (cur_stage + 1).toString();
     question_num_str = question_num_str.concat(" / ");
     question_num_str = question_num_str.concat(stages.length.toString());
-    question_num_label = ex.createParagraph(s_margin, 30, question_num_str, {
+    question_num_label = ex.createParagraph(s_margin, text_height,
+      question_num_str, {
       size: "medium"
     });
   }
@@ -555,7 +580,7 @@ var main = function(ex) {
       to_next_step();
     }else {
       if (!not_on_server && ex.data.content.score != undefined) {
-        ex.data.content.score -= 0.2;
+        ex.data.content.score -= 0.02;
       }
       ex.showFeedback(generate_feedback());
     }
@@ -682,8 +707,8 @@ var main = function(ex) {
     var width = 240;
     var x = ex.width() / 4 - width / 2;
     var offset = 20;
-    var code_well = ex.createCode(x+offset, (line_height + line_space) * line +
-      line_space, code, {
+    var code_well = ex.createCode(x + offset, (line_height+line_space) * line +
+      line_space + question_hdr_offset, code, {
       width: width.toString().concat("px"),
       language: "python"
     });
@@ -693,7 +718,8 @@ var main = function(ex) {
       ctx.strokeStyle = "black";
       var arrow_span = 5;
       ctx.beginPath();
-      var bottom_y=(line_height + line_space) * line + line_space - s_margin;
+      var bottom_y=(line_height + line_space) * line + line_space - s_margin +
+                   question_hdr_offset;
       ctx.moveTo(ex.width () / 4, bottom_y);
       ctx.lineTo(ex.width() / 4, bottom_y + s_margin - line_height / 2);
       ctx.moveTo(ex.width () / 4, bottom_y);
@@ -710,7 +736,7 @@ var main = function(ex) {
       instruction.remove();
     }
     var x = ex.width() / 2 + s_margin;
-    instruction = ex.createParagraph(x, s_margin, text, {
+    instruction = ex.createParagraph(x, s_margin + question_hdr_offset, text, {
       textAlign: "left",
       size: "large",
       width: ex.width() / 2 - s_margin
@@ -729,13 +755,14 @@ var main = function(ex) {
     }
     //Draw new buttons
     var btn_y = 80;
-    ans_button1 = ex.createButton(ex.width() / 2 + s_margin, btn_y, vals[0], {
+    ans_button1 = ex.createButton(ex.width() / 2 + s_margin, btn_y +
+      question_hdr_offset, vals[0], {
       width: btn_width.toString(),
       color: "blue"
     });
     ans_button1.on("click", function(){chosen_op_index = 0; check_answer();});
     ans_button2 = ex.createButton(ex.width() / 2 + btn_width * 2,
-                    btn_y, vals[1], {
+                    btn_y + question_hdr_offset, vals[1], {
       width: btn_width.toString(),
       color: "blue"
     });
@@ -803,8 +830,8 @@ var main = function(ex) {
   function draw_next_btn() {
     var btn_y = 80;
     var btn_width = 150;
-    next_stage_btn = ex.createButton(ex.width() / 2 + s_margin, btn_y,
-                     "Go to next question", {
+    next_stage_btn = ex.createButton(ex.width() / 2 + s_margin,
+                     btn_y + question_hdr_offset, "Go to next question", {
       width: btn_width.toString(),
       color: "blue"
     });
@@ -822,13 +849,17 @@ var main = function(ex) {
 
   //Draw the label of current question
   function draw_question_num() {
+    var text_height = 20;
+    var text_width = 100;
     question_hdr = ex.createParagraph(s_margin, 0, "Question", {
-      size: "medium"
+      size: "medium",
+      height: text_height
     });
     question_num_str = (cur_stage + 1).toString();
     question_num_str = question_num_str.concat(" / ");
     question_num_str = question_num_str.concat(stages.length.toString());
-    question_num_label = ex.createParagraph(s_margin, 30, question_num_str, {
+    question_num_label = ex.createParagraph(s_margin, text_height,
+      question_num_str, {
       size: "medium"
     });
   }
@@ -836,23 +867,25 @@ var main = function(ex) {
   //Submit final result
   function submit_task() {
     if (ex.data.content.score != undefined){
-      var feedBack = "Score: ";
-      feedBack = feedBack.concat(ex.data.content.score.toString());
+      var feedBack = "Congratulations, you have finished the task. ";
+      feedBack = feedBack.concat("Your score: ");
+      feedBack = feedBack.concat(ex.data.content.score.toFixed(2).toString());
       feedBack = feedBack.concat(" / 1.0");
+      ex.showFeedback(feedBack);
       ex.setGrade(ex.data.content.score, feedBack);
     }
     submitted = true;
+    ex.chromeElements.displayCAButton.disable();
     save_state();
   }
 
   //@Should be changed so that the initial question is about truth table
   function initialize() {
-    draw_truth_tables("or", (ex.width()/2) - 200, (ex.height()/2) - 150);
-    draw_truth_tables("and", (ex.width()/2)+50, (ex.height()/2)-150);
+    draw_truth_tables("or", (ex.width()/2) - 200, (ex.height()/2) - 120);
+    draw_truth_tables("and", (ex.width()/2)+50, (ex.height()/2)-120);
     if (!not_on_server) {
       ex.data.content.score = 1.0;
     }
-    ex.chromeElements.submitButton.on("click", function(){submit_task();})
     ex.chromeElements.undoButton.disable();
     ex.chromeElements.redoButton.disable();
     ex.chromeElements.resetButton.disable();
@@ -871,6 +904,7 @@ var main = function(ex) {
                 save_state();
                 next.remove();
             });
+    //make sure that there is saved state
     if (!not_on_server && ex.data.instance.state.score != undefined) {
       recover_state();
     }
