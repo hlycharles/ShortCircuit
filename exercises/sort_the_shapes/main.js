@@ -620,7 +620,7 @@ var main = function(ex) {
               var text=" None and empty structures are falsey in Python.";
             }
             else{
-              var text= cur_code_vals[1].concat(" is falsey in Python.");
+              var text= cur_code_vals[0].concat(" is falsey in Python.");
             }
             feedback="Incorrect. ".concat(text);
           }
@@ -661,22 +661,32 @@ var main = function(ex) {
             correct_option = 1;
           }
           if(correct_option==0){
+            /*
             if(!isNaN(cur_code_vals[0])){
               var text=" Integers other than 0 are truthy in Python.";
             }else{
               var text=cur_code_vals[0].concat(" is truthy in Python.")
             }
-            feedback="Incorrect. ".concat(text);
+            */
+            var text = "We can not know whether ";
+            text = text.concat(get_peak_str(cur_code));
+            text = text.concat(" is truthy yet");
           }
           else{
+            var text = "This falls in the case of short-circuit ";
+            text = text.concat("We can already know whether ");
+            text = text.concat(get_peak_str(cur_code));
+            text = text.concat(" is truthy or falsey");
+            /*
             if(isNaN(cur_code_vals[1])){
               var text=" None and empty structures are falsey in Python.";
             }
             else{
               var text= cur_code_vals[1].concat(" is falsey in Python.");
             }
-            feedback="Incorrect. ".concat(text);
+            feedback="Incorrect. ".concat(text); */
           }
+          feedback = "Incorrect. ".concat(text);
           break;
         case 4:
           var peak_str = get_peak_str(cur_code);
