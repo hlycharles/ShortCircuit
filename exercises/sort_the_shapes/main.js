@@ -665,7 +665,8 @@ var main = function(ex) {
           if (left_right[1] != "T") {
             correct_option = 1;
           }
-          if(correct_option==0){
+          var text = "";
+          if(correct_option==1){
             /*
             if(!isNaN(cur_code_vals[0])){
               var text=" Integers other than 0 are truthy in Python.";
@@ -673,13 +674,13 @@ var main = function(ex) {
               var text=cur_code_vals[0].concat(" is truthy in Python.")
             }
             */
-            //should be we know right? 
+            //should be we know right?
             var text = "We can not know whether ";
             text = text.concat(get_peak_str(cur_code));
-            text = text.concat(" is truthy yet");
+            text = text.concat(" is truthy or falsey yet");
           }
           else{
-            var text = "This falls in the case where it short-circuits. ";
+            text = "This falls in the case where it short-circuits. ";
             text = text.concat("We can already know whether ");
             text = text.concat(get_peak_str(cur_code));
             text = text.concat(" is truthy or falsey");
@@ -917,6 +918,10 @@ var main = function(ex) {
                 to_next_step();
                 //draw_submit_ans_button();
                 in_truth_table = false;
+                if (ins_alert != undefined) {
+                  ins_alert.remove();
+                  ins_alert = undefined;
+                }
                 save_state();
                 next.remove();
             });
@@ -1097,6 +1102,7 @@ var main = function(ex) {
       remove_truth_table();
       if (ins_alert != undefined) {
         ins_alert.remove();
+        ins_alert = undefined;
       }
       next.remove();
     }
