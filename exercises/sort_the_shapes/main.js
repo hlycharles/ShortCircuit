@@ -621,7 +621,7 @@ var main = function(ex) {
             feedback="Incorrect. ".concat(text);
           }
           else{
-            if(isNaN(cur_code_vals[1])){
+            if(isNaN(cur_code_vals[0])){
               var text=" None and empty structures are falsey in Python.";
             }
             else{
@@ -673,12 +673,13 @@ var main = function(ex) {
               var text=cur_code_vals[0].concat(" is truthy in Python.")
             }
             */
+            //should be we know right? 
             var text = "We can not know whether ";
             text = text.concat(get_peak_str(cur_code));
             text = text.concat(" is truthy yet");
           }
           else{
-            var text = "This falls in the case of short-circuit ";
+            var text = "This falls in the case where it short-circuits. ";
             text = text.concat("We can already know whether ");
             text = text.concat(get_peak_str(cur_code));
             text = text.concat(" is truthy or falsey");
@@ -705,7 +706,7 @@ var main = function(ex) {
           }
           if(correct_option==0){
             //be more specific
-            feedback="Incorrect. The expression short circuits and evaluates to the leftmost value";
+            feedback="Incorrect. The expression short circuits and evaluates to the leftmost value.";
           }
           else{
             //be more specific
