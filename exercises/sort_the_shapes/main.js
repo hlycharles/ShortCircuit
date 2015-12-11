@@ -51,6 +51,8 @@ var main = function(ex) {
   var question_hdr = undefined;
   //Number of question currently taken
   var question_num_label = undefined;
+  var draw_alert = true;
+  var ins_alert = undefined;
 
   /* keep track of current exercise state */
   //The index of correct drop down option
@@ -111,7 +113,10 @@ var main = function(ex) {
     ins = ins.concat("make sure that you are familiar with the truth table. ");
     ins = ins.concat("The highlighted blocks are where short-circuiting occurs.");
     ins = ins.concat(" Click \"next\" to continue");
-    ex.alert(ins, {stay: true});
+    if (in_truth_table && draw_alert) {
+      ins_alert = ex.alert(ins, {stay: true});
+      draw_alert = false;
+    }
     /*
     var text = ex.createParagraph(s_margin, s_margin, ins, {
         size: "medium",
@@ -1089,6 +1094,9 @@ var main = function(ex) {
     submitted = stored_state.submitted
     if (!in_truth_table) {
       remove_truth_table();
+      if (ins_alert != undefined) {
+        ins_alert.remove();
+      }
       next.remove();
     }
     //Compensate for offset in save state
@@ -1127,7 +1135,7 @@ var main = function(ex) {
       "code_level": code_level,
       "cur_code_vals": cur_code_vals,
       "score": ex.data.content.score,
-      "after_truth_table": in_truth_table,
+      "in_truth_table": in_truth_table,
       "correct_op_index": correct_op_index,
       "instruction": ins_str,
       "task_finished": task_finished,
