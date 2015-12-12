@@ -117,18 +117,6 @@ var main = function(ex) {
       ins_alert = ex.alert(ins, {stay: true});
       draw_alert = false;
     }
-    /*
-    var text = ex.createParagraph(s_margin, s_margin, ins, {
-        size: "medium",
-        width: ex.width()
-      });
-    text_list.push(text);
-    var text2 = ex.createParagraph(s_margin, ex.height() - margin,
-      "Click 'next' to continue", {
-        size: "medium"
-      });
-    text_list.push(text2);
-    */
 
     //draw vertical lines
     for(var i=0; i<2; i++){
@@ -469,7 +457,6 @@ var main = function(ex) {
           }else {
             cur_code_vals.splice(0, 1);
           }
-          //@TODO This is kind of an ad hoc way of detecting task finish
           //  condition
           var prev_code = cur_code;
           cur_code = eval(cur_code);
@@ -478,7 +465,6 @@ var main = function(ex) {
           }
           code_hist.push(cur_code);
           code_val_hist.push(cur_code_vals.slice());
-          //save_state();
           var code_val = format_code([cur_code]);
           code_level++;
           draw_code(code_val[0], code_level);
@@ -577,7 +563,6 @@ var main = function(ex) {
   //Check if user selects the correct answer from drop down
   function check_answer() {
     if (correct_op_index == undefined) {
-      console.log("Application error");
       return;
     }
     if (correct_op_index == chosen_op_index) {
@@ -592,7 +577,6 @@ var main = function(ex) {
     save_state();
   }
 
-  //@TODO
   //Generate feedback according to error user makes
   function generate_feedback() {
     var feedback="Incorrect";
@@ -657,25 +641,10 @@ var main = function(ex) {
           break;
         case 3:
           var peak_form = get_peak_format(cur_code);
-          console.log("peak_form".concat(peak_form));
           var left_right = get_left_right(peak_form);
-          console.log("get left right".concat(left_right[0]).concat(left_right[1]));
-          var correct_option = 0;
           //If the second operand is falsey
-          if (left_right[1] != "T") {
-            correct_option = 1;
-          }
-          var text = "";
-          if(correct_option==1){
-            /*
-            if(!isNaN(cur_code_vals[0])){
-              var text=" Integers other than 0 are truthy in Python.";
-            }else{
-              var text=cur_code_vals[0].concat(" is truthy in Python.")
-            }
-            */
-            //should be we know right?
-            var text = "We can not know whether ";
+          if(correct_op_index == 1){
+            text = "We can not know whether ";
             text = text.concat(get_peak_str(cur_code));
             text = text.concat(" is truthy or falsey yet");
           }
@@ -684,14 +653,6 @@ var main = function(ex) {
             text = text.concat("We can already know whether ");
             text = text.concat(get_peak_str(cur_code));
             text = text.concat(" is truthy or falsey");
-            /*
-            if(isNaN(cur_code_vals[1])){
-              var text=" None and empty structures are falsey in Python.";
-            }
-            else{
-              var text= cur_code_vals[1].concat(" is falsey in Python.");
-            }
-            feedback="Incorrect. ".concat(text); */
           }
           feedback = "Incorrect. ".concat(text);
           break;
@@ -896,7 +857,6 @@ var main = function(ex) {
     save_state();
   }
 
-  //@Should be changed so that the initial question is about truth table
   function initialize() {
     draw_truth_tables("or", (ex.width()/2) - 200, (ex.height()/2) - 120);
     draw_truth_tables("and", (ex.width()/2)+50, (ex.height()/2)-120);
@@ -1112,7 +1072,7 @@ var main = function(ex) {
       if (cur_step < 0) {
         cur_step = 4;
       }
-    }else if (!task_finished){
+    }else if (code_level != 3 || cur_stage != 2){
       draw_next_btn();
     }else if (!submitted) {
       ex.chromeElements.submitButton.enable();
