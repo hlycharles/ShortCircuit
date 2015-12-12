@@ -850,6 +850,8 @@ var main = function(ex) {
       feedBack = feedBack.concat(ex.data.content.score.toFixed(2).toString());
       feedBack = feedBack.concat(" / 1.0");
       ex.showFeedback(feedBack);
+      console.log(ex.data.content.score);
+      ex.setGrade(ex.data.content.score, feedBack);
       ex.setGrade(ex.data.content.score, feedBack);
     }
     submitted = true;
@@ -1069,6 +1071,9 @@ var main = function(ex) {
     //Compensate for offset in save state
     if (!is_finished(cur_code)) {
       cur_step--;
+      if (cur_step == 3) {
+        cur_step = 2;
+      }
       if (cur_step < 0) {
         cur_step = 4;
       }
@@ -1079,6 +1084,9 @@ var main = function(ex) {
     }
     draw_choice_btn();
     cur_step++;
+    if (cur_step == 3) {
+      cur_step++;
+    }
     draw_instruction(ins_str);
     draw_question_num();
     for (var i = 0; i <= code_level; i++) {
@@ -1112,6 +1120,8 @@ var main = function(ex) {
       ex.saveState(cur_state);
     }
   }
+
+  ex.unload(function(){save_state();});
 
   initialize();
 
